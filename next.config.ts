@@ -1,11 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  turbopack: {
-    resolveAlias: {
-      "cloudflare:workers": "./db/vercel-env.ts",
-    },
+  // The platform links here as lp.sonnetskills.com/50-ai-agents.
+  async rewrites() {
+    return [{ source: "/50-ai-agents", destination: "/" }];
   },
 };
 
