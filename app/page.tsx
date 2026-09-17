@@ -35,6 +35,7 @@ import {
 import { Book3D } from "@/components/book-3d";
 import { TiltFrame } from "@/components/tilt-frame";
 import { ADDONS, PANEL_URL, PRODUCT, orderTotal, orderTotalWithGst, type AddonKey } from "@/lib/offer";
+import { metaTrack } from "@/lib/pixel";
 
 const categories = [
   ["SALES & REVENUE", 8],
@@ -103,9 +104,28 @@ const faqs = [
 // Real, attributable customer reviews only. The section stays hidden while empty.
 const testimonials: { quote: string; name: string }[] = [];
 
+/**
+ * The moments on this page that are worth a Meta event. PageView is fired by
+ * the base code in the layout; Purchase belongs to the platform, which owns
+ * the order — firing it here as well would double-count every sale.
+ */
+const META_EVENT: Record<string, string> = {
+  checkout_popup_open: "InitiateCheckout",
+  checkout_form_submitted: "AddPaymentInfo",
+};
+
 function track(name: string, detail: Record<string, unknown> = {}) {
   window.dispatchEvent(new CustomEvent("sonnetskills:analytics", { detail: { name, ...detail } }));
   (window as typeof window & { dataLayer?: unknown[] }).dataLayer?.push({ event: name, ...detail });
+  const meta = META_EVENT[name];
+  if (meta) {
+    const value = typeof detail.value === "number" ? detail.value : undefined;
+    metaTrack(meta, {
+      content_type: "product",
+      content_ids: [PRODUCT.slug, ...(Array.isArray(detail.addons) ? (detail.addons as AddonKey[]).map((k) => ADDONS[k].slug) : [])],
+      ...(value === undefined ? {} : { value, currency: "INR" }),
+    });
+  }
 }
 const loadCelebration = () => import("@/lib/celebrate");
 async function celebrateCheckoutOpen() {
@@ -150,6 +170,14 @@ export default function Home() {
   }, [open]);
   useEffect(() => {
     track("page_view");
+    // The landing page is the product page, so arriving on it is a ViewContent.
+    metaTrack("ViewContent", {
+      content_type: "product",
+      content_ids: [PRODUCT.slug],
+      content_name: PRODUCT.name,
+      value: PRODUCT.amount,
+      currency: "INR",
+    });
     const s = () => setSticky(scrollY > 620);
     addEventListener("scroll", s);
     return () => removeEventListener("scroll", s);
