@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { load } from "@cashfreepayments/cashfree-js";
 import {
   Accordion,
@@ -168,16 +168,21 @@ export default function Home() {
     // Runs after the dialog has rendered, so the canvas can slot in behind the card.
     if (open) void celebrateCheckoutOpen();
   }, [open]);
+  const arrived = useRef(false);
   useEffect(() => {
-    track("page_view");
-    // The landing page is the product page, so arriving on it is a ViewContent.
-    metaTrack("ViewContent", {
-      content_type: "product",
-      content_ids: [PRODUCT.slug],
-      content_name: PRODUCT.name,
-      value: PRODUCT.amount,
-      currency: "INR",
-    });
+    // React runs mount effects twice in development; an arrival is still one arrival.
+    if (!arrived.current) {
+      arrived.current = true;
+      track("page_view");
+      // The landing page is the product page, so arriving on it is a ViewContent.
+      metaTrack("ViewContent", {
+        content_type: "product",
+        content_ids: [PRODUCT.slug],
+        content_name: PRODUCT.name,
+        value: PRODUCT.amount,
+        currency: "INR",
+      });
+    }
     const s = () => setSticky(scrollY > 620);
     addEventListener("scroll", s);
     return () => removeEventListener("scroll", s);
