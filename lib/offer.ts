@@ -30,6 +30,9 @@ export const ADDONS = {
       "Book 5 · The Founder AI Operating System — run your business with AI, automation & business memory",
     ],
     note: "One-time ₹49 · Delivered digitally with your playbook · No subscription",
+    /* What taking this unlocks beyond the books themselves. Shown on the card
+       as the reason to tick it, and again as a confirmation once ticked. */
+    bonus: "The AI Foundations mini-course — the short course that makes the rest make sense.",
   },
   newsletter: {
     slug: "ai-business-newsletter",
@@ -50,6 +53,9 @@ export const ADDONS = {
       "Opportunities early — so you stay ahead",
     ],
     note: "One-time ₹99 · Weekly for 3 months · No auto-renewal",
+    /* What taking this unlocks beyond the thing itself. Shown only once ticked,
+       because a bonus announced before you have earned it is just more copy. */
+    bonus: "Your free 15-minute AI Business Diagnostic — a call about your business, not a demo.",
   },
 } as const;
 

@@ -72,7 +72,7 @@ const comparison = [
   ["Approach", "Generic AI hacks", "AI + code + human judgment"],
   ["Context", "Quickly outdated", "Real implementation context"],
   ["Evidence", "Claims presented as equal", "250+ research points, weighted by source quality"],
-  ["Price", "Varies", "₹9, one-time"],
+  ["Price", "Varies", "₹9 + 18% GST, one-time"],
 ] as const;
 const steps = [
   ["Get instant access", "Pay ₹9 once. Your digital playbook is available right after payment is confirmed."],
@@ -98,7 +98,7 @@ const faqs = [
   ["Do I need technical knowledge?", "No. The playbook helps you understand opportunities first. Some implementations may later require no-code tools, software development or technical support."],
   ["Does this teach me how to build all 50 agents?", "No. The goal is not to build all 50. It helps you identify which workflows are worth exploring first."],
   ["How will I receive it?", "After successful payment, digital access instructions will be shown and/or sent to the email or mobile number provided at checkout."],
-  ["Is ₹9 a subscription?", "No. ₹9 is a one-time payment for this digital product."],
+  ["Is ₹9 a subscription?", "No. ₹9 is a one-time payment for this digital product. 18% GST is added at checkout, so ₹10.62 is what actually leaves your account — you see the full breakdown before you pay."],
   ["What are the add-ons at checkout?", `Two optional extras: a ${ADDONS.bundle.name} for ₹${ADDONS.bundle.amount}, and the ${ADDONS.newsletter.name} for ₹${ADDONS.newsletter.amount}. Both are one-time payments. The ₹9 playbook is complete on its own.`],
 ] as const;
 // Real, attributable customer reviews only. The section stays hidden while empty.
@@ -193,9 +193,16 @@ export default function Home() {
     if (preselect) setAddons((cur) => (cur.includes(preselect) ? cur : [...cur, preselect]));
     setOpen(true);
   };
+  const bonusRefs = useRef<Partial<Record<AddonKey, HTMLParagraphElement | null>>>({});
   const toggleAddon = (k: AddonKey) => {
-    track("checkout_addon_toggle", { addon: k, selected: !addons.includes(k) });
+    const adding = !addons.includes(k);
+    track("checkout_addon_toggle", { addon: k, selected: adding });
     setAddons((cur) => (cur.includes(k) ? cur.filter((a) => a !== k) : [...cur, k]));
+    // Only on the way in, and only when there is something to celebrate:
+    // a popper for un-ticking would be mocking them.
+    if (adding && "bonus" in ADDONS[k]) {
+      import("@/lib/popper").then(({ popBonus }) => popBonus(bonusRefs.current[k] ?? null));
+    }
   };
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -215,7 +222,7 @@ export default function Home() {
             name: f.get("name"),
             email: f.get("email"),
             phone: f.get("phone"),
-            marketingConsent: f.get("marketing") === "on",
+            marketingConsent: false,
             attribution: {
               utm_source: p.get("utm_source"),
               utm_medium: p.get("utm_medium"),
@@ -261,7 +268,7 @@ export default function Home() {
     <main className="overflow-hidden">
       {/* Announcement bar */}
       <div className="announce">
-        <span>₹9 one-time</span>
+        <span>₹9 + 18% GST, one-time</span>
         <span aria-hidden>•</span>
         <span>Instant digital access</span>
         <span aria-hidden>•</span>
@@ -308,7 +315,7 @@ export default function Home() {
             <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-4">
               <div className="flex items-baseline gap-2">
                 <span className="text-5xl font-black tracking-[-.06em] sm:text-6xl">₹9</span>
-                <span className="text-xs font-bold uppercase tracking-widest text-black/50">One-time</span>
+                <span className="text-xs font-bold uppercase tracking-widest text-black/50">+ 18% GST · One-time</span>
               </div>
               <Cta source="hero_cta_click" onClick={checkout}>GET THE PLAYBOOK FOR ₹9</Cta>
             </div>
@@ -370,7 +377,7 @@ export default function Home() {
           <div className="info-strip mt-12">
             <div><span>📘</span><strong>Digital playbook</strong></div>
             <div><span>⚡</span><strong>Instant access after payment</strong></div>
-            <div><span>🔒</span><strong>₹9 one-time · No subscription</strong></div>
+            <div><span>🔒</span><strong>₹9 + 18% GST, one-time · No subscription</strong></div>
           </div>
         </div>
       </section>
@@ -552,7 +559,7 @@ export default function Home() {
       <section className="bg-[#f3f3f0] py-24">
         <div className="container max-w-3xl">
           <Eyebrow>Value stack</Eyebrow>
-          <h2 className="section-title text-center">Everything you get for ₹9</h2>
+          <h2 className="section-title text-center">Everything you get for ₹9 + 18% GST</h2>
           <div className="card mt-12 p-6 sm:p-8">
             <p className="text-xs font-black uppercase tracking-widest text-black/50">The playbook</p>
             <ul className="mt-4 space-y-4">
@@ -587,7 +594,7 @@ export default function Home() {
             </ul>
             <div className="mt-8 border-t border-black/10 pt-8 text-center">
               <div className="text-5xl font-black tracking-[-.06em]">₹9</div>
-              <p className="mt-1 text-xs font-bold uppercase tracking-widest text-black/50">One-time payment</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-widest text-black/50">+ 18% GST · One-time payment</p>
               <div className="mt-5">
                 <Cta source="value_stack_cta_click" onClick={checkout}>GET THE PLAYBOOK — ₹9</Cta>
               </div>
@@ -599,7 +606,7 @@ export default function Home() {
           <Eyebrow>Complete your kit</Eyebrow>
           <h2 className="section-title text-center">Go further for less than a coffee.</h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-black/65">
-            Two optional add-ons you can tick at checkout. The ₹9 playbook is complete on its own.
+            Two optional add-ons you can tick at checkout, each + 18% GST. The ₹9 playbook is complete on its own.
           </p>
           <div className="mt-12 space-y-6">
             {(Object.keys(ADDONS) as AddonKey[]).map((k, i) => {
@@ -614,7 +621,10 @@ export default function Home() {
                     <p className="eyebrow">{a.label}</p>
                     <div className="mt-2 flex flex-wrap items-baseline justify-between gap-3">
                       <h3 className="text-2xl font-black leading-tight sm:text-3xl">{a.name}</h3>
-                      <p className="text-3xl font-black text-[#d71914]">₹{a.amount}</p>
+                      <p className="text-3xl font-black text-[#d71914]">
+                        ₹{a.amount}
+                        <span className="ml-1 align-middle text-xs font-bold uppercase tracking-wider text-black/45">+ 18% GST</span>
+                      </p>
                     </div>
                     <p className="mt-3 text-black/65">{a.summary}</p>
                     <ul className="mt-5 space-y-2.5">
@@ -684,7 +694,7 @@ export default function Home() {
               <strong className="text-5xl sm:text-6xl">₹9</strong>
               <Cta source="final_cta_click" onClick={checkout}>GET 50 AI AGENTS FOR ₹9</Cta>
             </div>
-            <p className="mt-4 text-sm text-white/55">One-time payment • Instant digital access • No subscription</p>
+            <p className="mt-4 text-sm text-white/55">₹9 + 18% GST, one-time • Instant digital access • No subscription</p>
           </div>
           <Book3D className="final-book-3d cursor-grab" sizes="320px" />
         </div>
@@ -696,7 +706,7 @@ export default function Home() {
         <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t border-black/15 bg-white p-3 shadow-2xl sm:hidden">
           <div className="pl-1 leading-tight">
             <strong className="text-2xl">₹9</strong>
-            <p className="text-[11px] text-black/55">Instant digital access</p>
+            <p className="text-[11px] text-black/55">+ 18% GST · Instant digital access</p>
           </div>
           <button className="btn-red min-h-12 shrink-0 px-5" onClick={() => checkout("mobile_sticky_cta_click")}>
             GET THE PLAYBOOK
@@ -717,7 +727,7 @@ export default function Home() {
               <Book3D className="h-32 w-24 cursor-grab sm:h-36 sm:w-28" />
               <div className="grow">
                 <p className="font-black leading-tight">{PRODUCT.name}</p>
-                <p className="mt-1 text-xs text-black/55">Digital playbook · Instant access · One-time</p>
+                <p className="mt-1 text-xs text-black/55">Digital playbook · Instant access · One-time · + 18% GST</p>
               </div>
               <p className="text-3xl font-black text-[#d71914]">₹{PRODUCT.amount}</p>
             </div>
@@ -741,7 +751,7 @@ export default function Home() {
               <Input required name="email" type="email" autoComplete="email" className="glass-input mt-2 h-12" />
             </label>
             <label className="block text-sm font-bold">
-              WhatsApp / Mobile Number
+              Mobile Number
               <div className="mt-2 flex">
                 <span className="flex h-12 items-center border border-r-0 border-input glass-input px-3">+91</span>
                 <Input
@@ -777,9 +787,32 @@ export default function Home() {
                       </span>
                       <span className="shrink-0 text-right">
                         <span className="block text-xl font-black">₹{a.amount}</span>
-                        <span className="text-[11px] text-black/50">add-on</span>
+                        <span className="text-[11px] text-black/50">+ 18% GST</span>
                       </span>
                     </label>
+                    {/* The unlock is the reason to tick the box, so it has to be
+                        readable before the box is ticked. Ticked, the same line
+                        turns from an offer into a confirmation. */}
+                    {"bonus" in a && (
+                      <p
+                        ref={(el) => {
+                          bonusRefs.current[k] = el;
+                        }}
+                        className={`mt-2 ml-8 flex items-start gap-2 text-xs font-bold leading-relaxed ${
+                          on ? "bonus-live text-[#d71914]" : "text-black/45"
+                        }`}
+                      >
+                        <span aria-hidden="true">🎁</span>
+                        <span>
+                          <span className="uppercase tracking-widest">
+                            {on ? "Bonus unlocked" : "Add this and you also unlock"}
+                          </span>
+                          <span className={`block font-semibold ${on ? "text-black/70" : "text-black/55"}`}>
+                            {(a as { bonus: string }).bonus}
+                          </span>
+                        </span>
+                      </p>
+                    )}
                     <button
                       type="button"
                       onClick={() => setExpanded(expanded === k ? null : k)}
@@ -807,7 +840,7 @@ export default function Home() {
                 );
               })}
               <p className="text-xs italic text-black/50">
-                Add-ons are optional. The ₹9 playbook is complete on its own.
+                Add-ons are optional. The ₹9 playbook is complete on its own. All prices are before GST; 18% is added below.
               </p>
             </div>
 
@@ -845,10 +878,6 @@ export default function Home() {
                 <a href={`${PANEL_URL}/refund-policy`} target="_blank" rel="noopener" className="underline">Refund Policy</a> and{" "}
                 <a href={`${PANEL_URL}/delivery-policy`} target="_blank" rel="noopener" className="underline">Digital Delivery Policy</a>.
               </span>
-            </label>
-            <label className="flex gap-3 text-sm leading-5 text-black/65">
-              <Checkbox name="marketing" className="mt-0.5" />
-              I’d like to receive useful AI, automation and SonnetSkills updates via email or WhatsApp.
             </label>
             {error && (
               <p role="alert" className="rounded bg-red-50 p-3 text-sm font-bold text-red-700">
