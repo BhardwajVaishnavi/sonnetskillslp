@@ -20,7 +20,7 @@ export const ADDONS = {
     summary: "5 books. A more capable you — from finding AI opportunities to running your business on them.",
     image: "/bundle-5-books.webp",
     checkoutImage: "/bundle-5-books.webp",
-    thumbFocus: "50% 35%",
+    thumbFocus: "50% 78%",
     imageAlt: "The Complete AI Implementation Kit for Founders — five SonnetSkills books",
     points: [
       "Book 1 · The AI Opportunity Finder — find the 10 highest-value AI opportunities inside your business",
@@ -43,7 +43,7 @@ export const ADDONS = {
     image: "/newsletter-ai-weekly.webp",
     // Landscape artwork used only inside the checkout popup.
     checkoutImage: "/newsletter-ai-weekly-checkout.webp",
-    thumbFocus: "22% 30%",
+    thumbFocus: "68% 40%",
     imageAlt: "AI Weekly newsletter by SonnetSkills",
     points: [
       "Key AI news — what actually matters",

@@ -612,10 +612,10 @@ export default function Home() {
             {(Object.keys(ADDONS) as AddonKey[]).map((k, i) => {
               const a = ADDONS[k];
               return (
-                <article key={k} className={`addon-showcase card overflow-hidden ${i % 2 ? "is-side" : ""}`}>
+                <article key={k} className="addon-showcase card overflow-hidden">
                   <TiltFrame className="addon-showcase-media" max={4}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={a.image} alt={a.imageAlt} loading="lazy" decoding="async" className="block h-full w-full object-cover" />
+                    <img src={a.image} alt={a.imageAlt} loading="lazy" decoding="async" className="block w-full" />
                   </TiltFrame>
                   <div className="p-6 sm:p-8">
                     <p className="eyebrow">{a.label}</p>
@@ -774,10 +774,14 @@ export default function Home() {
                   on = addons.includes(k);
                 return (
                   <div key={k} className={`addon ${on ? "addon-on" : ""}`}>
+                    {/* The artwork carries the offer — the books, the bonus, the
+                        price. At fifty-two pixels square it carried a corner of
+                        one book, which is not a picture of anything. It runs the
+                        width of the row now, at the ratio it was drawn in. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={a.checkoutImage} alt={a.imageAlt} loading="lazy" className="addon-banner" />
                     <label className="flex cursor-pointer gap-3">
                       <Checkbox checked={on} onCheckedChange={() => toggleAddon(k)} className="mt-1 size-5" />
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={a.checkoutImage} alt="" loading="lazy" className="addon-thumb" style={{ objectPosition: a.thumbFocus }} />
                       <span className="grow">
                         <span className="block text-[11px] font-black uppercase tracking-widest text-[#d71914]">
                           {a.label}
@@ -824,7 +828,7 @@ export default function Home() {
                     {expanded === k && (
                       <div className="addon-details mt-3 ml-8">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={a.checkoutImage} alt={a.imageAlt} className="mb-3 w-full rounded-xl object-cover" />
+                        <img src={a.checkoutImage} alt={a.imageAlt} className="mb-3 w-full rounded-xl" />
                         <ul className="space-y-1.5 text-sm text-black/70">
                           {a.points.map((pt) => (
                             <li key={pt} className="flex gap-2">

@@ -34,11 +34,20 @@
 .tilt:hover .tilt-glare{opacity:1}
 @keyframes ken-burns{from{transform:scale(1)}to{transform:scale(1.06)}}
 .addon-showcase .tilt-inner{border-radius:0;box-shadow:none}
-@media(min-width:768px){.addon-showcase.is-side{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:stretch}.addon-showcase.is-side .addon-showcase-media img{height:100%;object-position:50% 30%}}
-.addon-thumb{width:52px;height:52px;flex-shrink:0;border-radius:10px;object-fit:cover;object-position:50% 35%;box-shadow:0 4px 12px -4px rgba(0,0,0,.3)}
-.addon-details img{aspect-ratio:3/2;height:auto}
+/* The artwork is a 2:1 banner and carries the offer — the books, the bonus
+   badge, the price. Cropping it to fit a column cuts the bonus off the right
+   edge, which is the one thing on it somebody has not already read. So it runs
+   the full width at its own ratio and the copy sits beneath it. */
+.addon-showcase-media{width:100%}
+.addon-showcase-media img{aspect-ratio:2/1;width:100%;height:auto;object-fit:contain;background:#f6f3ee}
+/* The add-on's artwork inside the checkout, at the ratio it was drawn in.
+   It replaced a 52px square crop, which showed a corner of one book and read
+   as a placeholder rather than as the thing being offered. */
+.addon-banner{display:block;width:100%;aspect-ratio:2/1;object-fit:contain;background:#f6f3ee;border-radius:10px;margin-bottom:.75rem}
+/* Same banner, same reason: 3/2 here sliced the bonus off the side. */
+.addon-details img{aspect-ratio:2/1;height:auto;object-fit:contain;background:#f6f3ee}
 .final-book-3d{justify-self:center;width:260px;height:340px}
-@media(max-width:640px){.final-book-3d{order:-1;width:200px;height:260px;margin-inline:auto}.addon-thumb{width:44px;height:44px}}
+@media(max-width:640px){.final-book-3d{order:-1;width:200px;height:260px;margin-inline:auto}}
 @media (prefers-reduced-motion:reduce){.tilt{opacity:1;transform:none;transition:none}.tilt-inner,.tilt-inner img{animation:none;transition:none;transform:none}}
 /* Hero banner: copy left, book on the right */
 .hero{position:relative;display:flex;flex-direction:column;overflow:hidden;background:#f1efec}
