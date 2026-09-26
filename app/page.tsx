@@ -831,8 +831,16 @@ export default function Home() {
                     </button>
                     {expanded === k && (
                       <div className="addon-details mt-3 ml-8">
+                        {/* Opening "What's included" is a different question from
+                            the one the banner answers, so an add-on may answer it
+                            with its own artwork. Falls back to the banner when
+                            there is only one picture to show. */}
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={a.checkoutImage} alt={a.imageAlt} className="mb-3 w-full rounded-xl" />
+                        <img
+                          src={"detailsImage" in a ? (a as { detailsImage: string }).detailsImage : a.checkoutImage}
+                          alt={"detailsAlt" in a ? (a as { detailsAlt: string }).detailsAlt : a.imageAlt}
+                          className="mb-3 w-full rounded-xl"
+                        />
                         <ul className="space-y-1.5 text-sm text-black/70">
                           {a.points.map((pt) => (
                             <li key={pt} className="flex gap-2">

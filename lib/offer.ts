@@ -39,7 +39,7 @@ export const ADDONS = {
     label: "Newsletter · 180 days",
     name: "AI Weekly — 180-Day Subscription",
     amount: 99,
-    summary: "The one newsletter that keeps you ahead. Ideas, tools, trends and opportunities — every week.",
+    summary: "The one newsletter that keeps you ahead. Ideas, tools, trends and opportunities — every week by email, plus the free WhatsApp community.",
     image: "/newsletter-ai-weekly.webp",
     // Landscape artwork used only inside the checkout popup.
     checkoutImage: "/newsletter-ai-weekly-checkout.webp",
@@ -55,11 +55,12 @@ export const ADDONS = {
       "Practical workflows you can implement",
       "Founder insights — from builders",
       "Opportunities early — so you stay ahead",
+      "Free WhatsApp community — founders, professionals and operators applying AI",
     ],
-    note: "One-time ₹99 · Weekly for 180 days · No auto-renewal",
+    note: "One-time ₹99 · Delivered to your email every week for 180 days · Includes WhatsApp community access · No auto-renewal",
     /* What taking this unlocks beyond the thing itself. Shown only once ticked,
        because a bonus announced before you have earned it is just more copy. */
-    bonus: "Your free 15 Min Consultation — a call about your business, not a demo.",
+    bonus: "Your free 15-minute AI Business Diagnostic — a call about your business, not a demo.",
   },
 } as const;
 
