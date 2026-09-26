@@ -44,7 +44,11 @@ export const ADDONS = {
     // Landscape artwork used only inside the checkout popup.
     checkoutImage: "/newsletter-ai-weekly-checkout.webp",
     thumbFocus: "68% 40%",
-    imageAlt: "AI Weekly newsletter by SonnetSkills",
+    imageAlt: "AI Weekly — 180 days of the newsletter, plus the free WhatsApp community",
+    /* "What's included" opens on the bonus rather than the newsletter, because
+       the consultation is the thing somebody is deciding about at that point. */
+    detailsImage: "/consultation-25-min.webp",
+    detailsAlt: "Your free 25-minute AI Consultation — a 1:1 call with Ayush",
     /* Marks this the one to take. Presence is the whole signal — the same way
        `bonus` works — so only the add-on that carries it shows the badge, and
        there is no way to quietly recommend both. */
@@ -60,7 +64,7 @@ export const ADDONS = {
     note: "One-time ₹99 · Delivered to your email every week for 180 days · Includes WhatsApp community access · No auto-renewal",
     /* What taking this unlocks beyond the thing itself. Shown only once ticked,
        because a bonus announced before you have earned it is just more copy. */
-    bonus: "Your free 15-minute AI Business Diagnostic — a call about your business, not a demo.",
+    bonus: "Your free 25-minute AI Consultation — a 1:1 call about your business, not a demo.",
   },
 } as const;
 
