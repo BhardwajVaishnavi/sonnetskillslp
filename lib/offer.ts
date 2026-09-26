@@ -26,7 +26,7 @@ export const ADDONS = {
       "Book 1 · The AI Opportunity Finder — find the 10 highest-value AI opportunities inside your business",
       "Book 2 · 100 AI Workflows You Can Copy — automations for sales, marketing, operations, finance & CX",
       "Book 3 · 250 Ready-to-Use Prompts — plus a context library for business",
-      "Book 4 · Build Your First AI Employee — a 30-day blueprint from idea to production",
+      "Book 4 · Build Your First AI Employee — a 10-day blueprint from idea to production",
       "Book 5 · The Founder AI Operating System — run your business with AI, automation & business memory",
     ],
     note: "One-time ₹49 · Delivered digitally with your playbook · No subscription",
