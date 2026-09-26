@@ -36,8 +36,8 @@ export const ADDONS = {
   },
   newsletter: {
     slug: "ai-business-newsletter",
-    label: "Newsletter · 3 months",
-    name: "AI Weekly — 3-Month Subscription",
+    label: "Newsletter · 180 days",
+    name: "AI Weekly — 180-Day Subscription",
     amount: 99,
     summary: "The one newsletter that keeps you ahead. Ideas, tools, trends and opportunities — every week.",
     image: "/newsletter-ai-weekly.webp",
@@ -45,6 +45,10 @@ export const ADDONS = {
     checkoutImage: "/newsletter-ai-weekly-checkout.webp",
     thumbFocus: "68% 40%",
     imageAlt: "AI Weekly newsletter by SonnetSkills",
+    /* Marks this the one to take. Presence is the whole signal — the same way
+       `bonus` works — so only the add-on that carries it shows the badge, and
+       there is no way to quietly recommend both. */
+    recommended: true,
     points: [
       "Key AI news — what actually matters",
       "Tools worth trying — with real use cases",
@@ -52,10 +56,10 @@ export const ADDONS = {
       "Founder insights — from builders",
       "Opportunities early — so you stay ahead",
     ],
-    note: "One-time ₹99 · Weekly for 3 months · No auto-renewal",
+    note: "One-time ₹99 · Weekly for 180 days · No auto-renewal",
     /* What taking this unlocks beyond the thing itself. Shown only once ticked,
        because a bonus announced before you have earned it is just more copy. */
-    bonus: "Your free 15-minute AI Business Diagnostic — a call about your business, not a demo.",
+    bonus: "Your free 15 Min Consultation — a call about your business, not a demo.",
   },
 } as const;
 

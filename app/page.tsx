@@ -618,7 +618,10 @@ export default function Home() {
                     <img src={a.image} alt={a.imageAlt} loading="lazy" decoding="async" className="block w-full" />
                   </TiltFrame>
                   <div className="p-6 sm:p-8">
-                    <p className="eyebrow">{a.label}</p>
+                    <p className="eyebrow">
+                      {a.label}
+                      {"recommended" in a && <span className="addon-pick">Recommended</span>}
+                    </p>
                     <div className="mt-2 flex flex-wrap items-baseline justify-between gap-3">
                       <h3 className="text-2xl font-black leading-tight sm:text-3xl">{a.name}</h3>
                       <p className="text-3xl font-black text-[#d71914]">
@@ -785,6 +788,7 @@ export default function Home() {
                       <span className="grow">
                         <span className="block text-[11px] font-black uppercase tracking-widest text-[#d71914]">
                           {a.label}
+                          {"recommended" in a && <span className="addon-pick">Recommended</span>}
                         </span>
                         <span className="block font-black leading-snug">{a.name}</span>
                         <span className="mt-1 line-clamp-2 block text-sm text-black/60">{a.summary}</span>

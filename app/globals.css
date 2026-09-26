@@ -43,6 +43,10 @@
 /* The add-on's artwork inside the checkout, at the ratio it was drawn in.
    It replaced a 52px square crop, which showed a corner of one book and read
    as a placeholder rather than as the thing being offered. */
+/* "Recommended" beside an add-on's label. Filled rather than outlined: next to
+   a red uppercase label an outlined chip reads as a second label, and the point
+   of this is to be a mark on one of two otherwise equal-looking options. */
+.addon-pick{display:inline-block;margin-left:.5em;padding:.2em .55em;border-radius:999px;background:#d71914;color:#fff;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;vertical-align:middle;line-height:1}
 .addon-banner{display:block;width:100%;aspect-ratio:2/1;object-fit:contain;background:#f6f3ee;border-radius:10px;margin-bottom:.75rem}
 /* Same banner, same reason: 3/2 here sliced the bonus off the side. */
 .addon-details img{aspect-ratio:2/1;height:auto;object-fit:contain;background:#f6f3ee}
