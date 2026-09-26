@@ -21,7 +21,11 @@ export const ADDONS = {
     image: "/bundle-5-books.webp",
     checkoutImage: "/bundle-5-books.webp",
     thumbFocus: "50% 78%",
-    imageAlt: "The Complete AI Implementation Kit for Founders — five SonnetSkills books",
+    imageAlt: "Five e-books, a more capable you — the SonnetSkills AI Implementation Kit",
+    /* The banner sells the five books; opening "What's included" is where the
+       mini-course that comes with them gets its own say. */
+    detailsImage: "/mini-course-ai-foundations.webp",
+    detailsAlt: "AI Foundations Mini-Course — five modules of practical AI for real businesses",
     points: [
       "Book 1 · The AI Opportunity Finder — find the 10 highest-value AI opportunities inside your business",
       "Book 2 · 100 AI Workflows You Can Copy — automations for sales, marketing, operations, finance & CX",

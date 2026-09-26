@@ -836,9 +836,14 @@ export default function Home() {
                             with its own artwork. Falls back to the banner when
                             there is only one picture to show. */}
                         {/* eslint-disable-next-line @next/next/no-img-element */}
+                        {/* Read through an optional field rather than `in`:
+                            once every add-on carries one, `in` narrows the
+                            fallback branch to `never` and stops compiling,
+                            even though the fallback is still the right
+                            behaviour for the next add-on added without one. */}
                         <img
-                          src={"detailsImage" in a ? (a as { detailsImage: string }).detailsImage : a.checkoutImage}
-                          alt={"detailsAlt" in a ? (a as { detailsAlt: string }).detailsAlt : a.imageAlt}
+                          src={(a as { detailsImage?: string }).detailsImage ?? a.checkoutImage}
+                          alt={(a as { detailsAlt?: string }).detailsAlt ?? a.imageAlt}
                           className="mb-3 w-full rounded-xl"
                         />
                         <ul className="space-y-1.5 text-sm text-black/70">
