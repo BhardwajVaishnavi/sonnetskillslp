@@ -643,7 +643,7 @@ export default function Home() {
                       onClick={() => checkout(`addon_showcase_${k}_click`, k)}
                       className="btn-red mt-6 inline-flex w-full items-center justify-center gap-2 sm:w-auto"
                     >
-                      GET THE PLAYBOOK + ADD THIS — ₹{PRODUCT.amount + a.amount} <ArrowRight className="h-4 w-4" />
+                      GET THE PLAYBOOK + ADD THIS — ₹{PRODUCT.amount + a.amount} + 18% GST <ArrowRight className="h-4 w-4" />
                     </button>
                   </div>
                 </article>

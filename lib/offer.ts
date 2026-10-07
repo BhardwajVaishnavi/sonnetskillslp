@@ -16,7 +16,7 @@ export const ADDONS = {
     slug: "ai-business-bundle",
     label: "5-book bundle",
     name: "The Complete AI Implementation Kit for Founders",
-    amount: 49,
+    amount: 99,
     summary: "5 books. A more capable you — from finding AI opportunities to running your business on them.",
     image: "/bundle-5-books.webp",
     checkoutImage: "/bundle-5-books.webp",
@@ -33,22 +33,22 @@ export const ADDONS = {
       "Book 4 · Build Your First AI Employee — a 10-day blueprint from idea to production",
       "Book 5 · The Founder AI Operating System — run your business with AI, automation & business memory",
     ],
-    note: "One-time ₹49 · Delivered digitally with your playbook · No subscription",
+    note: "One-time ₹99 · Delivered digitally with your playbook · No subscription",
     /* What taking this unlocks beyond the books themselves. Shown on the card
        as the reason to tick it, and again as a confirmation once ticked. */
     bonus: "The AI Foundations mini-course — the short course that makes the rest make sense.",
   },
   newsletter: {
     slug: "ai-business-newsletter",
-    label: "Newsletter · 180 days",
-    name: "AI Weekly — 180-Day Subscription",
-    amount: 99,
-    summary: "The one newsletter that keeps you ahead. Ideas, tools, trends and opportunities — every week by email, plus the free WhatsApp community.",
+    label: "Membership · 12 months",
+    name: "AI Weekly — Yearly Membership",
+    amount: 499,
+    summary: "One membership, 12 months of AI advantage. Updates, workflows, tools, skills, resources, live sessions and the private community — we filter the noise and show you how to use what matters.",
     image: "/newsletter-ai-weekly.webp",
     // Landscape artwork used only inside the checkout popup.
     checkoutImage: "/newsletter-ai-weekly-checkout.webp",
     thumbFocus: "68% 40%",
-    imageAlt: "AI Weekly — 180 days of the newsletter, plus the free WhatsApp community",
+    imageAlt: "AI Weekly — a 12-month membership: weekly briefings, workflows, tools, skills, live sessions and the private WhatsApp community",
     /* "What's included" opens on the bonus rather than the newsletter, because
        the consultation is the thing somebody is deciding about at that point. */
     detailsImage: "/consultation-25-min.webp",
@@ -58,14 +58,18 @@ export const ADDONS = {
        there is no way to quietly recommend both. */
     recommended: true,
     points: [
-      "Key AI news — what actually matters",
-      "Tools worth trying — with real use cases",
-      "Practical workflows you can implement",
-      "Founder insights — from builders",
-      "Opportunities early — so you stay ahead",
-      "Free WhatsApp community — founders, professionals and operators applying AI",
+      "52 AI Weekly briefings — the updates, launches and shifts that matter, without the noise",
+      "52 practical workflows — for sales, marketing, operations, productivity and more",
+      "52 AI concepts made simple — agents, automation, models, MCP, RAG and whatever comes next",
+      "Tools worth trying — what deserves your attention, and what you can safely ignore",
+      "Prompts, templates and ready-to-use resources you can put to work immediately",
+      "Claude Skills and new AI skills — updated as new capabilities emerge",
+      "Exclusive playbooks and deep dives on the tools, trends and use cases that matter",
+      "Live AI sessions and workshops — ask questions and see implementation in action",
+      "Private WhatsApp community — founders, professionals and operators applying AI",
+      "12 months of continuous updates — as AI changes, your membership changes with it",
     ],
-    note: "One-time ₹99 · Delivered to your email every week for 180 days · Includes WhatsApp community access · No auto-renewal",
+    note: "One-time ₹499 · 12 months of access · Includes the private WhatsApp community · No auto-renewal",
     /* What taking this unlocks beyond the thing itself. Shown only once ticked,
        because a bonus announced before you have earned it is just more copy. */
     bonus: "Your free 25-minute AI Consultation — a 1:1 call about your business, not a demo.",
