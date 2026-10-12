@@ -93,3 +93,107 @@ export const GST_RATE = 0.18;
 export function orderTotalWithGst(addons: AddonKey[]) {
   return Math.round(orderTotal(addons) * (1 + GST_RATE) * 100) / 100;
 }
+
+/* ----------------------------------------------------------------- markets */
+
+/**
+ * The same page, sold in two markets.
+ *
+ * India is everything above, untouched: rupees, 18% GST named at checkout,
+ * Cashfree. GLOBAL is the dollar offer through Dodo Payments, which is the
+ * Merchant of Record internationally — any local sales tax is its to compute
+ * on its own checkout page, so this page quotes flat dollars and never
+ * invents a tax line. The panel recomputes every amount server-side from its
+ * own offer table; a market here is display and intent, never authority.
+ *
+ * Ads send global traffic to /global/50-ai-agents deliberately. There is no
+ * geo-detection: a deterministic URL is what makes pricing predictable and
+ * experiments attributable.
+ */
+export type Market = "IN" | "GLOBAL";
+
+type AddonMarketCopy = {
+  amount: number;
+  note: string;
+  bonus: string;
+  detailsImage?: string;
+  detailsAlt?: string;
+};
+
+export type MarketConfig = {
+  market: Market;
+  currency: "INR" | "USD";
+  /** "₹9" · "$5" — whole amounts only; fractions use money2. */
+  money: (amount: number) => string;
+  money2: (amount: number) => string;
+  product: { amount: number };
+  addons: Record<AddonKey, AddonMarketCopy>;
+  /** 0.18 adds the GST block everywhere it appears; 0 removes it entirely. */
+  taxRate: number;
+  /** Rides after a price: " + 18% GST" or "". */
+  taxSuffix: string;
+  /** The one-line reassurance under prices. */
+  priceLine: string;
+  payable: (addons: AddonKey[]) => number;
+  trustLine: string;
+  /** "in" renders the fixed +91 field; "intl" an optional international one. */
+  phone: "in" | "intl";
+  faqSubscription: string;
+};
+
+const inMoney = (n: number) => `₹${n}`;
+const usMoney = (n: number) => `$${n}`;
+
+export const MARKETS: Record<Market, MarketConfig> = {
+  IN: {
+    market: "IN",
+    currency: "INR",
+    money: inMoney,
+    money2: (n) => `₹${n.toFixed(2)}`,
+    product: { amount: PRODUCT.amount },
+    addons: {
+      bundle: { amount: ADDONS.bundle.amount, note: ADDONS.bundle.note, bonus: ADDONS.bundle.bonus },
+      newsletter: { amount: ADDONS.newsletter.amount, note: ADDONS.newsletter.note, bonus: ADDONS.newsletter.bonus },
+    },
+    taxRate: GST_RATE,
+    taxSuffix: " + 18% GST",
+    priceLine: "₹9 + 18% GST, one-time",
+    payable: orderTotalWithGst,
+    trustLine: "Secure checkout powered by Cashfree.",
+    phone: "in",
+    faqSubscription:
+      "No. ₹9 is a one-time payment for this digital product. 18% GST is added at checkout, so ₹10.62 is what actually leaves your account — you see the full breakdown before you pay.",
+  },
+  GLOBAL: {
+    market: "GLOBAL",
+    currency: "USD",
+    money: usMoney,
+    money2: (n) => `$${n.toFixed(2)}`,
+    product: { amount: 5 },
+    addons: {
+      bundle: {
+        amount: 15,
+        note: "One-time $15 · Delivered digitally with your playbook · No subscription",
+        bonus: ADDONS.bundle.bonus,
+      },
+      newsletter: {
+        amount: 45,
+        note: "One-time $45 · 12 months of access · Includes the private community · No auto-renewal",
+        /* The 25-minute consultation is an India promise. The global membership
+           sells the 12 months of material, and nothing it does not include. */
+        bonus: "12 months of continuous updates — briefings, workflows, playbooks, skills and the private community.",
+        detailsImage: ADDONS.newsletter.checkoutImage,
+        detailsAlt: ADDONS.newsletter.imageAlt,
+      },
+    },
+    taxRate: 0,
+    taxSuffix: "",
+    priceLine: "$5 one-time · No subscription",
+    payable: (addons: AddonKey[]) =>
+      addons.reduce<number>((sum, k) => sum + MARKETS.GLOBAL.addons[k].amount, 5),
+    trustLine: "Secure international checkout — major cards, Apple Pay and Google Pay, powered by Dodo Payments.",
+    phone: "intl",
+    faqSubscription:
+      "No. $5 is a one-time payment for this digital product. Prices are in US dollars; any local sales tax is calculated by our payment partner at checkout, and you see the final amount before you pay.",
+  },
+};
