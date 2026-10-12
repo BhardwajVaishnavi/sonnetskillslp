@@ -105,6 +105,74 @@ async function celebrateCheckoutOpen() {
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return <p className="eyebrow mb-4 text-center">{children}</p>;
 }
+
+/**
+ * "You seem to be on the wrong page" — as an offer, never a redirect.
+ *
+ * Ads send each country to its own URL on purpose, so somebody arriving here
+ * was sent here; what this catches is organic and shared traffic: an American
+ * reading rupees, an Indian reading dollars. One slim bar, the right page one
+ * tap away with the visitor's UTM parameters carried along, dismissible and
+ * remembered. When the country is unknown (local dev, stripped headers) it
+ * shows nothing — a guess would be worse than the mismatch.
+ */
+function MarketSuggestion({ market, onEvent }: { market: Market; onEvent: (name: string, detail?: Record<string, unknown>) => void }) {
+  const [offer, setOffer] = useState<{ href: string; line: string; cta: string } | null>(null);
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("market-suggestion-dismissed")) return;
+    } catch {}
+    let cancelled = false;
+    fetch("/api/geo")
+      .then((r) => (r.ok ? r.json() : { country: "" }))
+      .then(({ country }: { country: string }) => {
+        if (cancelled || !country) return;
+        const search = location.search;
+        if (market === "IN" && country !== "IN") {
+          setOffer({
+            href: `/global/50-ai-agents${search}`,
+            line: "Outside India? This page prices in rupees.",
+            cta: "Get the playbook for $5 →",
+          });
+          onEvent("market_suggestion_shown", { from: "IN", country });
+        } else if (market === "GLOBAL" && country === "IN") {
+          setOffer({
+            href: `/50-ai-agents${search}`,
+            line: "Browsing from India?",
+            cta: "Get the playbook for ₹9 →",
+          });
+          onEvent("market_suggestion_shown", { from: "GLOBAL", country });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [market]);
+  if (!offer) return null;
+  const dismiss = () => {
+    setOffer(null);
+    try {
+      localStorage.setItem("market-suggestion-dismissed", "1");
+    } catch {}
+  };
+  return (
+    <div className="flex items-center justify-center gap-3 bg-[#0b0b0b] px-3 py-2 text-center text-xs font-bold text-white sm:text-sm">
+      <span className="text-white/75">{offer.line}</span>
+      <a
+        href={offer.href}
+        className="underline decoration-[#f24a43] decoration-2 underline-offset-2"
+        onClick={() => onEvent("market_suggestion_clicked", { to: offer.href })}
+      >
+        {offer.cta}
+      </a>
+      <button type="button" onClick={dismiss} aria-label="Dismiss" className="ml-1 text-white/60 hover:text-white">
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
 function Cta({ source, onClick, children }: { source: string; onClick: (s: string) => void; children: React.ReactNode }) {
   return (
     <button onClick={() => onClick(source)} className="btn-red inline-flex items-center justify-center gap-2">
@@ -309,6 +377,7 @@ export function LandingPage({ market = "IN" }: { market?: Market }) {
 
   return (
     <main className="overflow-hidden">
+      <MarketSuggestion market={market} onEvent={track} />
       {/* Announcement bar */}
       <div className="announce">
         <span>{cfg.priceLine}</span>
