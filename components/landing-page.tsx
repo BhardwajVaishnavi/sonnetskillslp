@@ -905,7 +905,10 @@ export function LandingPage({ market = "IN" }: { market?: Market }) {
                   type="tel"
                   autoComplete="tel"
                   placeholder="+1 555 000 1234 — include your country code"
-                  pattern="^\+?[0-9() .-]{8,20}$"
+                  /* Browsers compile pattern with the v flag, where ( ) and -
+                     must be escaped inside [ ]; unescaped, the whole pattern is
+                     rejected and the field goes unchecked. Anchoring is implicit. */
+                  pattern="\+?[0-9 .\(\)\-]{8,20}"
                   className="glass-input mt-2 h-12"
                 />
               </label>
