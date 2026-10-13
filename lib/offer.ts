@@ -179,11 +179,13 @@ export const MARKETS: Record<Market, MarketConfig> = {
       newsletter: {
         amount: 45,
         note: "One-time $45 · 12 months of access · Includes the private community · No auto-renewal",
-        /* The 25-minute consultation is an India promise. The global membership
-           sells the 12 months of material, and nothing it does not include. */
-        bonus: "12 months of continuous updates — briefings, workflows, playbooks, skills and the private community.",
-        detailsImage: ADDONS.newsletter.checkoutImage,
-        detailsAlt: ADDONS.newsletter.imageAlt,
+        /* The same 25-minute consultation as India. The panel unlocks it for
+           global members too (CONSULTATION_MARKETS defaults to IN,GLOBAL) and
+           shows the booking slots in the buyer's own time zone. Taking it out
+           means changing both, never only one. */
+        bonus: ADDONS.newsletter.bonus,
+        detailsImage: ADDONS.newsletter.detailsImage,
+        detailsAlt: ADDONS.newsletter.detailsAlt,
       },
     },
     taxRate: 0,

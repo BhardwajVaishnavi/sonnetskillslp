@@ -36,3 +36,12 @@ Cashfree keys belong to the platform only; in Cashfree, whitelist both domains.
 prices before GST. The platform recomputes every total and refuses add-ons that
 aren't published, and the popup refuses to open payment if the platform's total
 differs from the one shown. Change prices in Admin › Products and here together.
+
+## Two domains
+
+`lp.sonnetskills.com` is India (₹, Cashfree) and also serves the global page
+at `/global/50-ai-agents`. `ip.sonnetskills.com` is the same Vercel project on
+a second domain: a host rewrite in `next.config.ts` serves the global page
+($, Dodo) at its root and at `/50-ai-agents`. Add the domain in the project's
+settings; nothing else to deploy. The panel must list both origins in
+`LANDING_ORIGINS`.

@@ -137,7 +137,8 @@ function MarketSuggestion({ market, onEvent }: { market: Market; onEvent: (name:
           onEvent("market_suggestion_shown", { from: "IN", country });
         } else if (market === "GLOBAL" && country === "IN") {
           setOffer({
-            href: `/50-ai-agents${search}`,
+            // On ip. every path is the global page, so India is the other domain.
+            href: `${location.hostname.startsWith("ip.") ? "https://lp.sonnetskills.com" : ""}/50-ai-agents${search}`,
             line: "Browsing from India?",
             cta: "Get the playbook for ₹9 →",
           });
