@@ -438,11 +438,13 @@ export function LandingPage({ market = "IN" }: { market?: Market }) {
               <LockKeyhole className="mr-1 inline h-3.5 w-3.5" /> Secure payment • Instant access • No subscription
             </p>
             <div className="social-proof">
-              <div className="avatar-stack">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <Image key={n} src={`/customer-${n}.png`} width={42} height={42} alt="SonnetSkills customer" className="avatar" />
-                ))}
-              </div>
+              {cfg.proofPhotos.length > 0 && (
+                <div className="avatar-stack">
+                  {cfg.proofPhotos.map((src) => (
+                    <Image key={src} src={src} width={42} height={42} alt="SonnetSkills customer" className="avatar" />
+                  ))}
+                </div>
+              )}
               <div>
                 <p>
                   <strong>11,000+</strong> business owners &amp; professionals downloaded

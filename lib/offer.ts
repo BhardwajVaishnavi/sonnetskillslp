@@ -139,6 +139,13 @@ export type MarketConfig = {
   /** "in" renders the fixed +91 field; "intl" an optional international one. */
   phone: "in" | "intl";
   faqSubscription: string;
+  /**
+   * Photos beside "11,000+ … downloaded". Real customers of this market only,
+   * photographed with their permission: the page labels them "SonnetSkills
+   * customer", so a stock or generated face here is a fake endorsement. Empty
+   * shows the line without faces.
+   */
+  proofPhotos: string[];
 };
 
 const inMoney = (n: number) => `₹${n}`;
@@ -163,6 +170,7 @@ export const MARKETS: Record<Market, MarketConfig> = {
     phone: "in",
     faqSubscription:
       "No. ₹9 is a one-time payment for this digital product. 18% GST is added at checkout, so ₹10.62 is what actually leaves your account — you see the full breakdown before you pay.",
+    proofPhotos: ["/customer-1.png", "/customer-2.png", "/customer-3.png", "/customer-4.png", "/customer-5.png"],
   },
   GLOBAL: {
     market: "GLOBAL",
@@ -197,5 +205,6 @@ export const MARKETS: Record<Market, MarketConfig> = {
     phone: "intl",
     faqSubscription:
       "No. $5 is a one-time payment for this digital product. Prices are in US dollars; any local sales tax is calculated by our payment partner at checkout, and you see the final amount before you pay.",
+    proofPhotos: [],
   },
 };
