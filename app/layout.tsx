@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { META_PIXEL_ID } from "@/lib/pixel";
+import { META_PIXEL_ID, META_PIXEL_ID_GLOBAL } from "@/lib/pixel";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,7 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        {/* Meta Pixel base code, between the header tags, exactly as Meta gives it. */}
+        {/* Meta Pixel base code, between the header tags, exactly as Meta gives it — with one
+            change: ip.sonnetskills.com and /global start the international pixel, everything
+            else India's. Same static page on both domains, so the address decides. */}
         <script
           id="meta-pixel"
           dangerouslySetInnerHTML={{
@@ -31,7 +33,8 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window,document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '${META_PIXEL_ID}');
+var g=location.hostname.indexOf('ip.')===0||location.pathname.indexOf('/global')===0;
+fbq('init', g ? '${META_PIXEL_ID_GLOBAL}' : '${META_PIXEL_ID}');
 fbq('track', 'PageView');`,
           }}
         />
