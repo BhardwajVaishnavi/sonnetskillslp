@@ -22,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        {/* Meta Pixel base code, between the header tags, exactly as Meta gives it — with one
+        {/* Tracking runs only on the real domains (lp., ip., www.sonnetskills.com): Vercel opens
+            every new deployment address to screenshot it, and those visits are not visitors.
+            Meta Pixel base code, between the header tags, exactly as Meta gives it — with one
             change: ip.sonnetskills.com starts the international pixel and only that one;
             lp.sonnetskills.com starts India's and only that one. One static page serves both
             domains, so the domain decides. (/global counts too, for local testing only:
@@ -30,7 +32,8 @@ export default function RootLayout({
         <script
           id="meta-pixel"
           dangerouslySetInnerHTML={{
-            __html: `!function(f,b,e,v,n,t,s)
+            __html: `if(/(^|\\.)sonnetskills\\.com$/.test(location.hostname)){
+!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
@@ -40,7 +43,8 @@ s.parentNode.insertBefore(t,s)}(window,document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 var g=location.hostname.indexOf('ip.')===0||location.pathname.indexOf('/global')===0;
 fbq('init', g ? '${META_PIXEL_ID_GLOBAL}' : '${META_PIXEL_ID}');
-fbq('track', 'PageView');`,
+fbq('track', 'PageView');
+}`,
           }}
         />
         {/* Microsoft Clarity, as Clarity gives it: heatmaps and session recordings for both
@@ -49,7 +53,7 @@ fbq('track', 'PageView');`,
         <script
           id="ms-clarity"
           dangerouslySetInnerHTML={{
-            __html: `(function(c,l,a,r,i,t,y){
+            __html: `if(/(^|\\.)sonnetskills\\.com$/.test(location.hostname))(function(c,l,a,r,i,t,y){
     c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
     t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
     y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
