@@ -1,14 +1,22 @@
 import type { NextConfig } from "next";
 
 /*
- * ip.sonnetskills.com is this same site on a second domain, opening straight
- * on the global page. Host-matched and checked before files, so on ip. the
- * root and /50-ai-agents are the dollar page, and on lp. nothing changes.
- * lp.sonnetskills.com/global/50-ai-agents keeps working for ads that use it.
+ * Two domains, never mixed: lp.sonnetskills.com is India (₹, Cashfree) and
+ * only India; ip.sonnetskills.com is international ($, Dodo) and only that.
+ * This is one site on both, so the host decides: on ip. the root and
+ * /50-ai-agents are the dollar page, and on lp. any /global address goes to
+ * ip. — query string and UTMs included — instead of showing dollars there.
  */
 const IP_HOST = [{ type: "host" as const, value: "ip.sonnetskills.com" }];
+const LP_HOST = [{ type: "host" as const, value: "lp.sonnetskills.com" }];
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      { source: "/global", has: LP_HOST, destination: "https://ip.sonnetskills.com/", permanent: false },
+      { source: "/global/:path*", has: LP_HOST, destination: "https://ip.sonnetskills.com/", permanent: false },
+    ];
+  },
   async rewrites() {
     return {
       beforeFiles: [

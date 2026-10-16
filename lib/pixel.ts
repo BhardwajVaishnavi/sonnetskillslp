@@ -13,10 +13,10 @@
  */
 export const META_PIXEL_ID = (process.env.NEXT_PUBLIC_META_PIXEL_ID || "1602092924784468").trim();
 /**
- * The international market's own pixel. ip.sonnetskills.com and the
- * /global pages start this one instead of India's, so each ad account sees
- * only its own visitors. Chosen in the browser from the address, because one
- * static layout serves both domains.
+ * The international market's own pixel. ip.sonnetskills.com starts this one
+ * and never India's; lp.sonnetskills.com starts India's and never this one, so
+ * each ad account sees only its own visitors. Chosen in the browser from the
+ * domain, because one static layout serves both.
  */
 export const META_PIXEL_ID_GLOBAL = (process.env.NEXT_PUBLIC_META_PIXEL_ID_GLOBAL || "1312785944229636").trim();
 

@@ -20,8 +20,10 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <head>
         {/* Meta Pixel base code, between the header tags, exactly as Meta gives it — with one
-            change: ip.sonnetskills.com and /global start the international pixel, everything
-            else India's. Same static page on both domains, so the address decides. */}
+            change: ip.sonnetskills.com starts the international pixel and only that one;
+            lp.sonnetskills.com starts India's and only that one. One static page serves both
+            domains, so the domain decides. (/global counts too, for local testing only:
+            on lp. it redirects to ip. before this runs.) */}
         <script
           id="meta-pixel"
           dangerouslySetInnerHTML={{
