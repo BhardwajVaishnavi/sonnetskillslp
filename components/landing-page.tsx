@@ -286,6 +286,9 @@ export function LandingPage({ market = "IN" }: { market?: Market }) {
         if (!data.checkoutUrl)
           throw new Error("Something went wrong while creating your payment session. Please try again.");
         track("dodo_checkout_open", { value: payable, addons });
+        // Leaving the page at once cancels the pixel's AddPaymentInfo request;
+        // a moment's grace lets it go. Cashfree's path already waits for its SDK.
+        await new Promise((resolve) => setTimeout(resolve, 400));
         location.assign(data.checkoutUrl);
         redirecting = true;
         return;
