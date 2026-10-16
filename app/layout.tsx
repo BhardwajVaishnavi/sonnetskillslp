@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { META_PIXEL_ID, META_PIXEL_ID_GLOBAL } from "@/lib/pixel";
+
+/** Microsoft Clarity project for both landing pages. */
+const CLARITY_ID = (process.env.NEXT_PUBLIC_CLARITY_ID || "yymwhrqefv").trim();
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -38,6 +41,19 @@ s.parentNode.insertBefore(t,s)}(window,document,'script',
 var g=location.hostname.indexOf('ip.')===0||location.pathname.indexOf('/global')===0;
 fbq('init', g ? '${META_PIXEL_ID_GLOBAL}' : '${META_PIXEL_ID}');
 fbq('track', 'PageView');`,
+          }}
+        />
+        {/* Microsoft Clarity, as Clarity gives it: heatmaps and session recordings for both
+            landing pages (lp. and ip.) in one project; filter by domain inside Clarity.
+            Form fields are masked by Clarity's default settings. */}
+        <script
+          id="ms-clarity"
+          dangerouslySetInnerHTML={{
+            __html: `(function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "${CLARITY_ID}");`,
           }}
         />
       </head>
