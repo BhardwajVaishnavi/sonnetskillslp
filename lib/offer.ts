@@ -1,4 +1,4 @@
-// What this page shows. Orders, prices and access are owned by the SonnetSkills
+// What these pages show. Orders, prices and access are owned by the SonnetSkills
 // platform (sonnetskills.com), which recomputes every total from its own product
 // data; `slug` values must match the products there. Keep these prices in step
 // with Admin › Products.
@@ -16,7 +16,7 @@ export const ADDONS = {
     slug: "ai-business-bundle",
     label: "5-book bundle",
     name: "The Complete AI Implementation Kit for Founders",
-    amount: 99,
+    amount: 129,
     summary: "5 books. A more capable you — from finding AI opportunities to running your business on them.",
     image: "/bundle-5-books.webp",
     checkoutImage: "/bundle-5-books.webp",
@@ -33,7 +33,7 @@ export const ADDONS = {
       "Book 4 · Build Your First AI Employee — a 10-day blueprint from idea to production",
       "Book 5 · The Founder AI Operating System — run your business with AI, automation & business memory",
     ],
-    note: "One-time ₹99 · Delivered digitally with your playbook · No subscription",
+    note: "One-time ₹129 · Delivered digitally with your ebook · No subscription",
     /* What taking this unlocks beyond the books themselves. Shown on the card
        as the reason to tick it, and again as a confirmation once ticked. */
     bonus: "The AI Foundations mini-course — the short course that makes the rest make sense.",
@@ -42,7 +42,7 @@ export const ADDONS = {
     slug: "ai-business-newsletter",
     label: "Membership · 12 months",
     name: "AI Weekly — Yearly Membership",
-    amount: 499,
+    amount: 699,
     summary: "One membership, 12 months of AI advantage. Updates, workflows, tools, skills, resources, live sessions and the private community — we filter the noise and show you how to use what matters.",
     image: "/newsletter-ai-weekly.webp",
     // Landscape artwork used only inside the checkout popup.
@@ -69,7 +69,7 @@ export const ADDONS = {
       "Private WhatsApp community — founders, professionals and operators applying AI",
       "12 months of continuous updates — as AI changes, your membership changes with it",
     ],
-    note: "One-time ₹499 · 12 months of access · Includes the private WhatsApp community · No auto-renewal",
+    note: "One-time ₹699 · 12 months of access · Includes the private WhatsApp community · No auto-renewal",
     /* What taking this unlocks beyond the thing itself. Shown only once ticked,
        because a bonus announced before you have earned it is just more copy. */
     bonus: "Your free 25-minute AI Consultation — a 1:1 call about your business, not a demo.",
@@ -152,6 +152,8 @@ const inMoney = (n: number) => `₹${n}`;
 const usMoney = (n: number) => `$${n}`;
 
 export const MARKETS: Record<Market, MarketConfig> = {
+  /* The v1 ₹9 India page. No route renders it any more — India is the v2 page
+     (V2_* below) — but the shared component still types every market. */
   IN: {
     market: "IN",
     currency: "INR",
@@ -208,3 +210,78 @@ export const MARKETS: Record<Market, MarketConfig> = {
     proofPhotos: [],
   },
 };
+
+/* ------------------------------------------------------------ funnel v2 (IN) */
+
+/**
+ * India's v2 offer: the ₹199 "500 AI Agents" ebook up front, the kit + mini-course
+ * as the bump, and the yearly membership offered as its own step before payment.
+ * Served by components/landing-page-v2.tsx at lp.sonnetskills.com. The GLOBAL
+ * market above is untouched and still sells the v1 playbook through Dodo.
+ *
+ * Prices are before GST and must match Admin › Products (the panel seeds them as
+ * 19900 / 12900 / 69900 paise). GST is computed on the whole cart exactly the way
+ * the panel does — round(subtotal_paise × 18 / 100) — so the total shown here is
+ * paisa for paisa what Cashfree charges, and the popup refuses to open payment
+ * if the panel's amount disagrees.
+ *
+ *   A ebook only        ₹199  → ₹234.82
+ *   B + bundle          ₹328  → ₹387.04
+ *   C + membership      ₹898  → ₹1,059.64
+ *   D all three       ₹1,027  → ₹1,211.86
+ */
+export const V2_PRODUCT = {
+  slug: "500-ai-agents",
+  name: "500 AI Agents for Real Businesses",
+  short: "500 AI Agents",
+  amount: 199,
+} as const;
+
+export const V2_OFFERS = {
+  bump: {
+    slug: "ai-business-bundle",
+    name: "The Complete AI Implementation Kit for Founders",
+    short: "Ebook bundle + AI Foundations mini-course",
+    amount: 129,
+  },
+  membership: {
+    slug: "ai-business-newsletter",
+    name: "AI Weekly — Yearly Membership",
+    short: "AI Weekly — Yearly Membership",
+    amount: 699,
+  },
+} as const;
+
+export type V2OfferKey = keyof typeof V2_OFFERS;
+
+/** The order the panel expects add-on slugs in. */
+export const V2_OFFER_ORDER: readonly V2OfferKey[] = ["bump", "membership"];
+
+const GST_PERCENT = 18;
+
+export function v2Cart(chosen: readonly V2OfferKey[]) {
+  const keys = V2_OFFER_ORDER.filter((k) => chosen.includes(k));
+  const subtotalPaise = (V2_PRODUCT.amount + keys.reduce<number>((n, k) => n + V2_OFFERS[k].amount, 0)) * 100;
+  const gstPaise = Math.round((subtotalPaise * GST_PERCENT) / 100);
+  return {
+    keys,
+    addons: keys.map((k) => V2_OFFERS[k].slug),
+    subtotalPaise,
+    gstPaise,
+    totalPaise: subtotalPaise + gstPaise,
+  };
+}
+
+/** "₹1,027" for whole rupees, "₹1,059.64" otherwise. */
+export function inr(paise: number) {
+  const whole = paise % 100 === 0;
+  return `₹${(paise / 100).toLocaleString("en-IN", {
+    minimumFractionDigits: whole ? 0 : 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+/** Always two decimals, for the GST line and totals: "₹35.82". */
+export function inr2(paise: number) {
+  return `₹${(paise / 100).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}

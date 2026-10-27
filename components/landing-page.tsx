@@ -999,7 +999,7 @@ export function LandingPage({ market = "IN" }: { market?: Market }) {
   );
 }
 
-function Footer() {
+export function Footer() {
   return (
     <footer className="rule bg-white py-12">
       <div className="container grid gap-8 md:grid-cols-2">
