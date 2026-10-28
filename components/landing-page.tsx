@@ -1300,6 +1300,12 @@ function IndiaPage() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>(1);
   const [chosen, setChosen] = useState<V2OfferKey[]>([]);
+  // The cart as of the last change, so two quick ticks never read a stale cart.
+  const chosenRef = useRef<V2OfferKey[]>([]);
+  const choose = (next: V2OfferKey[]) => {
+    chosenRef.current = next;
+    setChosen(next);
+  };
   const [expanded, setExpanded] = useState(false);
   const [memberOpen, setMemberOpen] = useState(false);
   const [gstOpen, setGstOpen] = useState(false);
@@ -1371,7 +1377,7 @@ function IndiaPage() {
           phone: data.phone ? (data.phone.startsWith("+91") ? `+91 ${data.phone.slice(3)}` : data.phone) : PHONE_PREFIX,
         });
         const addons = Array.isArray(data.addons) ? data.addons : [];
-        setChosen((Object.keys(V2_OFFERS) as V2OfferKey[]).filter((k) => addons.includes(V2_OFFERS[k].slug)));
+        choose((Object.keys(V2_OFFERS) as V2OfferKey[]).filter((k) => addons.includes(V2_OFFERS[k].slug)));
         setLead(token);
         track("cart_resumed");
         setStep(2);
@@ -1409,7 +1415,7 @@ function IndiaPage() {
   function checkout(source: string, preselect?: V2OfferKey) {
     track(source);
     track("checkout_popup_open", { source, preselect });
-    if (preselect) setChosen((c) => (c.includes(preselect) ? c : [...c, preselect]));
+    if (preselect && !chosenRef.current.includes(preselect)) choose([...chosenRef.current, preselect]);
     setStep(lead ? 2 : 1);
     setPayError("");
     setOpen(true);
@@ -1456,8 +1462,9 @@ function IndiaPage() {
 
   /** Both offers sit in the cart as tick boxes; having both in unlocks the 1:1. */
   function setOffers(keys: V2OfferKey[], on: boolean) {
-    const next = on ? [...new Set([...chosen, ...keys])] : chosen.filter((k) => !keys.includes(k));
-    setChosen(next);
+    const now = chosenRef.current;
+    const next = on ? [...new Set([...now, ...keys])] : now.filter((k) => !keys.includes(k));
+    choose(next);
     for (const k of keys) track(k === "bump" ? "checkout_bump_toggle" : "checkout_membership_toggle", { selected: on });
     if (!on) return;
     keys.forEach(addToCart);
