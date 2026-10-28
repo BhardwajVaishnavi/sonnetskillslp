@@ -216,7 +216,7 @@ export const MARKETS: Record<Market, MarketConfig> = {
 /**
  * India's v2 offer: the ₹199 "500 AI Agents" ebook up front, the kit + mini-course
  * as the bump, and the yearly membership offered as its own step before payment.
- * Served by components/landing-page-v2.tsx at lp.sonnetskills.com. The GLOBAL
+ * Served by IndiaPage in components/landing-page.tsx at lp.sonnetskills.com. The GLOBAL
  * market above is untouched and still sells the v1 playbook through Dodo.
  *
  * Prices are before GST and must match Admin › Products (the panel seeds them as

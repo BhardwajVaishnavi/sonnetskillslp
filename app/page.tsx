@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { LandingPageV2 } from "@/components/landing-page-v2";
+import { LandingPage } from "@/components/landing-page";
 
 /*
  * The India page (lp.sonnetskills.com), at / and (via the rewrite in
- * next.config.ts) at /50-ai-agents: funnel v2, the ₹199 + GST 500 AI Agents.
- * The international page at ip.sonnetskills.com (/global/50-ai-agents) keeps
- * the v1 component, components/landing-page.tsx, and its dollar offer.
+ * next.config.ts) at /50-ai-agents: funnel v2, the ₹199 + GST 500 AI Agents,
+ * in the same design as the international page at ip.sonnetskills.com
+ * (/global/50-ai-agents), which keeps the v1 playbook and its dollar offer.
  */
 export const metadata: Metadata = {
   title: "500 AI Agents for Real Businesses — Build your first AI agent | SonnetSkills",
@@ -14,5 +14,5 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return <LandingPageV2 />;
+  return <LandingPage market="IN" />;
 }

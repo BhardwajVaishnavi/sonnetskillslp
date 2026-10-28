@@ -83,14 +83,27 @@
 .bonus-live>span[aria-hidden]{animation:bonus-shake .5s ease-out .06s both;display:inline-block}
 @keyframes bonus-shake{0%{transform:rotate(0) scale(1)}30%{transform:rotate(-16deg) scale(1.3)}60%{transform:rotate(12deg) scale(1.2)}100%{transform:rotate(0) scale(1)}}
 @media (prefers-reduced-motion:reduce){.bonus-live,.bonus-live>span[aria-hidden]{animation:none}}
-/* Funnel v2 (India): components/landing-page-v2.tsx */
-.v2-hero{background:linear-gradient(180deg,#f6f5f2,#efede9)}
-.v2-deck{position:relative;width:100%;max-width:560px;justify-self:center;aspect-ratio:100/78}
-.v2-deck-card{position:absolute;z-index:calc(5 - var(--i));width:74%;height:auto;left:calc(var(--i)*6.5%);top:calc(var(--i)*7%);border-radius:6px;border:1px solid #0000001a;background:#fff;box-shadow:0 18px 40px -18px rgba(0,0,0,.35);transition:transform .3s}
-.v2-deck:hover .v2-deck-card{transform:translateY(calc(var(--i)*-3px))}
-.v2-sample{position:relative;overflow:hidden;border-radius:14px;border:1px solid #0000001a;background:#fff;box-shadow:0 24px 50px -30px rgba(0,0,0,.4)}
-.v2-sample a{position:relative}
-.v2-zoom{position:absolute;right:10px;bottom:10px;display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:999px;background:rgba(11,11,11,.78);color:#fff;font-size:.7rem;font-weight:800;letter-spacing:.04em}
-.v2-btn-outline{min-height:52px;padding:0 16px;border:2px solid #d71914;border-radius:4px;background:#fff;color:#d71914;font-weight:900;letter-spacing:.01em;transition:.2s}.v2-btn-outline:hover{background:#d719140d}
-@media(max-width:640px){.v2 .v2-hero .container{padding-block:2rem 2.5rem}.v2-btn-outline{font-size:.85rem}.v2-checkout .btn-red{font-size:.85rem}}
-@media (prefers-reduced-motion:reduce){.v2-deck-card{transition:none}}
+/* India (funnel v2): the five volume covers fanned like a hand of cards —
+   volume 01 in front, the others peeking out on the left with their red
+   numbers. Used in the hero, the final CTA and the checkout. */
+.cover-fan{position:relative;aspect-ratio:10/7.4}
+.cover-fan-card{position:absolute;right:3%;bottom:10%;z-index:calc(5 - var(--i));width:60%;height:auto;border-radius:5px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.08),0 24px 44px -20px rgba(0,0,0,.42);transform-origin:0 100%;transform:translateX(calc(var(--i)*-10%)) rotate(calc(var(--i)*-4deg));transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.cover-fan:hover .cover-fan-card{transform:translateX(calc(var(--i)*-10.5%)) rotate(calc(var(--i)*-4.4deg))}
+.hero-volumes{background:radial-gradient(55% 60% at 50% 70%,#fff 0%,rgba(255,255,255,0) 70%),#f1efec}
+.hero-covers{order:2;width:min(100% - 40px,480px);margin:0 auto 2.25rem}
+@media(min-width:1024px){
+  .hero-volumes{background:radial-gradient(45% 60% at 74% 52%,#fff 0%,rgba(255,255,255,0) 72%),#f1efec}
+  .hero-covers{position:absolute;z-index:1;top:50%;right:max(20px,calc((100% - 1180px)/2));width:min(46%,600px);margin:0;transform:translateY(-50%)}
+}
+@media(min-width:1400px){.hero-volumes{background:radial-gradient(40% 60% at 72% 52%,#fff 0%,rgba(255,255,255,0) 72%),#ece9e5}}
+.display-long{font-size:clamp(3rem,4.5vw,4.6rem)}
+@media(max-width:640px){.display-long{font-size:clamp(2.1rem,9.4vw,2.6rem);line-height:.98}}
+.final-covers{justify-self:center;width:100%;max-width:320px}
+@media(max-width:640px){.final-covers{order:-1;max-width:300px;margin-inline:auto}}
+.checkout-covers{width:110px;flex-shrink:0}
+@media(max-width:640px){.checkout-covers{width:88px}}
+/* A sample page, with a badge saying it opens full size. */
+.zoom-badge{position:absolute;right:10px;bottom:10px;display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:999px;background:rgba(11,11,11,.78);color:#fff;font-size:.7rem;font-weight:800;letter-spacing:.04em}
+.btn-outline-red{min-height:52px;padding:0 16px;border:2px solid #d71914;border-radius:4px;background:#fff;color:#d71914;font-weight:900;letter-spacing:.01em;transition:.2s}.btn-outline-red:hover{background:#d719140d}
+@media(max-width:640px){.btn-outline-red{font-size:.85rem}}
+@media (prefers-reduced-motion:reduce){.cover-fan-card{transition:none}}
