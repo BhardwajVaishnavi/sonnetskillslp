@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
-  ArrowLeft,
   ArrowRight,
   BookOpen,
   Briefcase,
@@ -1156,8 +1155,6 @@ const IN_KIT = {
 
 type Fields = { name: string; email: string; phone: string };
 type FieldErrors = Partial<Record<keyof Fields | "gstin" | "billingName", string>>;
-/** details → cart (both offers) → pay */
-type Step = 1 | 2 | 3;
 
 const PHONE_PREFIX = "+91 ";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -1260,13 +1257,7 @@ function Line({ label, value, muted }: { label: string; value: string; muted?: b
   );
 }
 
-function BackLink({ onClick, disabled }: { onClick: () => void; disabled?: boolean }) {
-  return (
-    <button type="button" onClick={onClick} disabled={disabled} className="inline-flex items-center gap-1 text-xs font-bold text-black/50 disabled:opacity-40">
-      <ArrowLeft className="h-3.5 w-3.5" /> Back
-    </button>
-  );
-}
+const leadKey = (f: Fields) => [f.name.trim().toLowerCase(), f.email.trim().toLowerCase(), f.phone.replace(/\D/g, "")].join("|");
 
 function IndiaPage() {
   const price = inr(V2_PRODUCT.amount * 100);
@@ -1294,11 +1285,9 @@ function IndiaPage() {
 
   const [fields, setFields] = useState<Fields>({ name: "", email: "", phone: PHONE_PREFIX });
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [submitting, setSubmitting] = useState(false);
   const [lead, setLead] = useState<string | null>(null);
 
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState<Step>(1);
   const [chosen, setChosen] = useState<V2OfferKey[]>([]);
   // The cart as of the last change, so two quick ticks never read a stale cart.
   const chosenRef = useRef<V2OfferKey[]>([]);
@@ -1318,10 +1307,13 @@ function IndiaPage() {
 
   const cart = v2Cart(chosen);
   const has = (k: V2OfferKey) => chosen.includes(k);
+  // "Add both and get the 1:1 (+₹828)", or just what's still missing if one is already in.
+  const missingForBoth = (["bump", "membership"] as const).filter((k) => !has(k)).reduce((n, k) => n + V2_OFFERS[k].amount, 0) * 100;
   const bumpRowRef = useRef<HTMLDivElement | null>(null);
   const bonusRef = useRef<HTMLDivElement | null>(null);
   const addedToCart = useRef(new Set<string>());
   const checkoutStarted = useRef(false);
+  const savedLead = useRef(""); // the details the lead was saved with, so it's saved once
 
   function track(name: string, detail: Record<string, unknown> = {}) {
     window.dispatchEvent(new CustomEvent("sonnetskills:analytics", { detail: { name, market: "IN", variant: "v2", ...detail } }));
@@ -1343,8 +1335,9 @@ function IndiaPage() {
     });
   }
 
-  /** InitiateCheckout: the details are in and the offer steps begin. */
+  /** InitiateCheckout: the checkout loads (once per visit). */
   function initiateCheckout(source: string) {
+    if (checkoutStarted.current) return;
     track("checkout_initiated", { source });
     checkoutStarted.current = true;
     metaTrack("InitiateCheckout", { content_type: "product", content_ids: [V2_PRODUCT.slug], value: V2_PRODUCT.amount, currency: "INR" });
@@ -1360,10 +1353,6 @@ function IndiaPage() {
     // Runs after the dialog has rendered, so the canvas can slot in behind the card.
     if (open) void celebrateCheckoutOpen();
   }, [open]);
-  useEffect(() => {
-    // Each step starts at its top, not wherever the last one was scrolled to.
-    document.querySelector(".checkout-dialog")?.scrollTo({ top: 0 });
-  }, [step]);
   /** A reminder email's link back to the same cart: ?cart=<24 hex>. */
   function resume() {
     const token = new URLSearchParams(location.search).get("cart");
@@ -1379,8 +1368,8 @@ function IndiaPage() {
         const addons = Array.isArray(data.addons) ? data.addons : [];
         choose((Object.keys(V2_OFFERS) as V2OfferKey[]).filter((k) => addons.includes(V2_OFFERS[k].slug)));
         setLead(token);
+        savedLead.current = leadKey({ name: data.name || "", email: data.email || "", phone: data.phone || "" });
         track("cart_resumed");
-        setStep(2);
         setPayError("");
         setOpen(true);
         track("checkout_popup_open", { source: "cart_resume" });
@@ -1411,14 +1400,14 @@ function IndiaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** Every CTA opens the popup; somebody whose details are already in goes straight to the offer. */
+  /** Every CTA opens the one-screen checkout: details, both offers, total, pay. */
   function checkout(source: string, preselect?: V2OfferKey) {
     track(source);
     track("checkout_popup_open", { source, preselect });
-    if (preselect && !chosenRef.current.includes(preselect)) choose([...chosenRef.current, preselect]);
-    setStep(lead ? 2 : 1);
+    if (preselect && !chosenRef.current.includes(preselect)) setOffers([preselect], true);
     setPayError("");
     setOpen(true);
+    initiateCheckout(source);
   }
 
   const setField = (k: keyof Fields) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1427,27 +1416,29 @@ function IndiaPage() {
     if (errors[k]) setErrors((x) => ({ ...x, [k]: undefined }));
   };
 
-  async function submitDetails(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const found = validate(fields);
-    setErrors(found);
-    if (Object.keys(found).length) {
-      track("order_form_invalid", { fields: Object.keys(found) });
-      return;
-    }
-    setSubmitting(true);
+  /**
+   * The lead (SS-Checkout-Started, and the 30-minute cart reminder) is saved as
+   * soon as the three fields are filled in, before payment. Once per set of
+   * details, so a buyer who ticks boxes and blurs fields never gets two reminders.
+   */
+  async function saveLead() {
+    if (Object.keys(validate(fields)).length) return true;
+    const key = leadKey(fields);
+    if (savedLead.current === key) return true;
+    savedLead.current = key;
     const { ok, data } = await panel<{ lead?: string }>("/api/checkout/lead", {
       product: V2_PRODUCT.slug,
+      addons: v2Cart(chosenRef.current).addons,
       name: fields.name.trim(),
       email: fields.email.trim(),
       phone: fields.phone.trim(),
       attribution: attribution(),
       market: "IN",
     });
-    setSubmitting(false);
     if (!ok && data.field && ["name", "email", "phone"].includes(data.field)) {
-      setErrors({ [data.field]: data.error || "Please check this field." });
-      return;
+      savedLead.current = "";
+      setErrors((x) => ({ ...x, [data.field as string]: data.error || "Please check this field." }));
+      return false;
     }
     if (ok && data.lead) {
       setLead(data.lead);
@@ -1456,8 +1447,7 @@ function IndiaPage() {
     }
     // A lead that couldn't be saved (offline, rate-limited) never stops a buyer:
     // the order itself is saved at payment.
-    if (!checkoutStarted.current) initiateCheckout("order_form");
-    setStep(2);
+    return true;
   }
 
   /** Both offers sit in the cart as tick boxes; having both in unlocks the 1:1. */
@@ -1476,7 +1466,13 @@ function IndiaPage() {
   async function pay(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setPayError("");
-    setErrors((x) => ({ ...x, gstin: undefined }));
+    const found = validate(fields);
+    setErrors(found);
+    if (Object.keys(found).length) {
+      track("order_form_invalid", { fields: Object.keys(found) });
+      (e.currentTarget.querySelector("[aria-invalid=true]") as HTMLElement | null)?.focus();
+      return;
+    }
     const cleanGstin = gstin.trim().toUpperCase();
     if (cleanGstin && !GSTIN_RE.test(cleanGstin)) {
       setGstOpen(true);
@@ -1486,6 +1482,7 @@ function IndiaPage() {
     setPaying(true);
     let redirecting = false;
     try {
+      if (!(await saveLead())) return;
       const { ok, status, data } = await panel<{
         orderId?: string;
         paymentSessionId?: string;
@@ -1538,13 +1535,6 @@ function IndiaPage() {
       if (!redirecting) setPaying(false);
     }
   }
-
-  const heads: Record<Step, [string, React.ReactNode, string]> = {
-    1: ["Get the 500 AI Agents", "You’re almost there.", "Enter your details to continue to secure payment."],
-    2: ["Step 2 of 3 · Your cart", "Your cart", "Two optional extras. Tick what you want; the total updates as you go."],
-    3: ["Step 3 of 3 · Payment", "Review and pay", "Prices are before GST; 18% GST is added below."],
-  };
-  const [headEyebrow, headTitle, headText] = heads[step];
 
   return (
     <main className="overflow-hidden">
@@ -2030,38 +2020,42 @@ function IndiaPage() {
         </div>
       )}
 
-      {/* Checkout: details → cart (both offers) → pay */}
+      {/* Checkout, one screen as before: details, the bump, the membership, the total, pay */}
       <Dialog open={open} onOpenChange={(o) => { if (!paying) setOpen(o); }}>
         <DialogContent className="checkout-dialog max-h-[95vh] gap-0 overflow-y-auto p-0 sm:max-w-lg">
           <div className="glass-head border-b border-white/50 p-6">
             <DialogHeader>
-              <p className="eyebrow">{headEyebrow}</p>
-              <DialogTitle className="text-3xl font-black tracking-tight">{headTitle}</DialogTitle>
-              <DialogDescription>{headText}</DialogDescription>
+              <p className="eyebrow">Get the 500 AI Agents</p>
+              <DialogTitle className="text-3xl font-black tracking-tight">You’re almost there.</DialogTitle>
+              <DialogDescription>Enter your details, add any extras, and pay securely.</DialogDescription>
             </DialogHeader>
-            {step <= 2 && (
-              <div className="glass-tile mt-5 flex items-center gap-3 p-3 text-left sm:gap-4">
-                <CoverFan className="checkout-covers" sizes="120px" />
-                <div className="grow">
-                  <p className="text-sm font-black leading-tight sm:text-base">{V2_PRODUCT.name}</p>
-                  <p className="mt-1 text-xs text-black/55">5 volumes · Instant access · + 18% GST</p>
-                </div>
-                <p className="text-2xl font-black text-[#d71914] sm:text-3xl">{price}</p>
+            <div className="glass-tile mt-5 flex items-center gap-3 p-3 text-left sm:gap-4">
+              <CoverFan className="checkout-covers" sizes="120px" />
+              <div className="grow">
+                <p className="text-sm font-black leading-tight sm:text-base">{V2_PRODUCT.name}</p>
+                <p className="mt-1 text-xs text-black/55">5 volumes · Instant access · + 18% GST</p>
               </div>
-            )}
+              <p className="text-2xl font-black text-[#d71914] sm:text-3xl">{price}</p>
+            </div>
           </div>
 
-          {step === 1 && (
-            <form
-              onSubmit={submitDetails}
-              noValidate
-              onFocus={() => {
-                if (!started) {
-                  setStarted(true);
-                  track("checkout_form_started");
-                }
+          <form
+            onSubmit={pay}
+            noValidate
+            onFocus={() => {
+              if (!started) {
+                setStarted(true);
+                track("checkout_form_started");
+              }
+            }}
+            className="space-y-4 p-6"
+          >
+            <div
+              className="space-y-4"
+              onBlur={(e) => {
+                // Leaving the details for the offers (or anywhere else) saves the lead.
+                if (!e.currentTarget.contains(e.relatedTarget as Node | null)) void saveLead();
               }}
-              className="space-y-4 p-6"
             >
               <Field label="Full Name" error={errors.name}>
                 <Input name="name" autoComplete="name" value={fields.name} onChange={setField("name")} aria-invalid={!!errors.name} className="glass-input mt-2 h-12" />
@@ -2091,26 +2085,12 @@ function IndiaPage() {
                 />
               </Field>
               <p className="text-sm text-black/60">We’ll send your order and updates on WhatsApp and email.</p>
-              <button disabled={submitting} className="btn-red inline-flex w-full items-center justify-center gap-2 disabled:opacity-60">
-                {submitting ? "ONE MOMENT…" : <>CONTINUE <ArrowRight className="h-4 w-4" /></>}
-              </button>
-              <p className="text-center text-xs text-black/50">
-                <LockKeyhole className="mr-1 inline h-3 w-3" /> Secure checkout powered by Cashfree.
-              </p>
-            </form>
-          )}
+            </div>
 
-          {step === 2 && (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                track("checkout_cart_done", { bump: has("bump"), membership: has("membership"), value: cart.totalPaise / 100 });
-                setStep(3);
-              }}
-              className="space-y-4 p-6"
-            >
-              <p className="text-xs font-black uppercase tracking-widest text-black/50">Add to your order (optional)</p>
+            <div className="space-y-3 pt-2">
+              <p className="text-xs font-black uppercase tracking-widest text-black/50">Optional add-ons</p>
 
+              {/* The order bump */}
               <div ref={bumpRowRef} className={`addon ${has("bump") ? "addon-on" : ""}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={ADDONS.bundle.checkoutImage} alt={ADDONS.bundle.imageAlt} loading="lazy" className="addon-banner" />
@@ -2118,10 +2098,12 @@ function IndiaPage() {
                   <Checkbox checked={has("bump")} onCheckedChange={(v) => setOffers(["bump"], v === true)} className="mt-1 size-5" />
                   <span className="grow">
                     <span className="block text-[11px] font-black uppercase tracking-widest text-[#d71914]">{IN_KIT.bump.label}</span>
-                    <span className="block font-black leading-snug">
-                      Add the ebook bundle + AI Foundations mini-course, +{inr(V2_OFFERS.bump.amount * 100)}
-                    </span>
+                    <span className="block font-black leading-snug">Add the ebook bundle + AI Foundations mini-course</span>
                     <span className="mt-1 block text-sm text-black/60">The current bundle, unchanged, plus the mini-course free.</span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <span className="block text-xl font-black">+{inr(V2_OFFERS.bump.amount * 100)}</span>
+                    <span className="text-[11px] text-black/50">+ 18% GST</span>
                   </span>
                 </label>
                 <button
@@ -2149,6 +2131,7 @@ function IndiaPage() {
                 )}
               </div>
 
+              {/* The membership upsell */}
               <div className={`addon ${has("membership") ? "addon-on" : ""}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={ADDONS.newsletter.checkoutImage} alt={ADDONS.newsletter.imageAlt} loading="lazy" className="addon-banner" />
@@ -2156,9 +2139,12 @@ function IndiaPage() {
                   <Checkbox checked={has("membership")} onCheckedChange={(v) => setOffers(["membership"], v === true)} className="mt-1 size-5" />
                   <span className="grow">
                     <span className="block text-[11px] font-black uppercase tracking-widest text-[#d71914]">{IN_KIT.membership.label}</span>
-                    <span className="block font-black leading-snug">
-                      Add the {V2_OFFERS.membership.name}, +{inr(V2_OFFERS.membership.amount * 100)}
-                    </span>
+                    <span className="block font-black leading-snug">Add the yearly membership</span>
+                    <span className="mt-1 block text-sm text-black/60">{V2_OFFERS.membership.name}: 12 months of AI advantage.</span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <span className="block text-xl font-black">+{inr(V2_OFFERS.membership.amount * 100)}</span>
+                    <span className="text-[11px] text-black/50">+ 18% GST</span>
                   </span>
                 </label>
                 <button
@@ -2181,136 +2167,109 @@ function IndiaPage() {
                 )}
               </div>
 
-              <div ref={bonusRef} className={`flex items-start gap-3 rounded-2xl border-2 border-dashed p-3 text-sm ${has("bump") && has("membership") ? "border-[#d71914] bg-red-50" : "border-black/15"}`}>
+              {/* The 1:1 bonus: the reason to take all three */}
+              <div
+                ref={bonusRef}
+                className={`flex items-start gap-3 rounded-2xl border-2 border-dashed p-3 text-sm ${
+                  has("bump") && has("membership") ? "border-[#d71914] bg-red-50" : "border-black/15"
+                }`}
+              >
                 <span aria-hidden="true" className="text-xl leading-none">🎁</span>
                 <span className="grow">
-                  <span className="block text-[11px] font-black uppercase tracking-widest text-[#d71914]">Bonus</span>
+                  <span className="block text-[11px] font-black uppercase tracking-widest text-[#d71914]">
+                    {has("bump") && has("membership") ? "Bonus unlocked" : "Bonus"}
+                  </span>
                   {has("bump") && has("membership") ? (
-                    <span className="block font-bold">Unlocked: your free 25-minute 1:1 call is included.</span>
+                    <span className="block font-bold">Your free 25-minute 1:1 call is included.</span>
                   ) : (
                     <>
-                      <span className="block font-bold">Take all three and get a free 25-minute 1:1 call.</span>
+                      <span className="block font-bold">Take all three and get a 25-minute 1:1 call.</span>
                       <button
                         type="button"
                         onClick={() => setOffers(["bump", "membership"], true)}
-                        className="mt-1 text-xs font-black text-[#d71914] underline underline-offset-4"
+                        className="btn-outline-red mt-2 w-full"
                       >
-                        Add both
+                        Add both and get the 1:1 <span className="whitespace-nowrap">(+{inr(missingForBoth)})</span>
                       </button>
                     </>
                   )}
                 </span>
               </div>
+              <p className="text-xs italic text-black/50">Optional. The {price} volumes are complete on their own.</p>
+            </div>
 
-              <div className="glass-tile p-4 text-sm">
-                <Line label={V2_PRODUCT.name} value={inr(V2_PRODUCT.amount * 100)} />
-                {cart.keys.map((k) => (
-                  <Line key={k} label={V2_OFFERS[k].short} value={inr(V2_OFFERS[k].amount * 100)} muted />
-                ))}
-                <div className="mt-3 border-t border-black/10 pt-3">
-                  <Line label="Subtotal" value={inr2(cart.subtotalPaise)} muted />
-                  <Line label="GST (18%)" value={inr2(cart.gstPaise)} muted />
-                </div>
-                <div className="mt-2 flex justify-between border-t border-black/10 pt-3 text-base font-black">
-                  <span>Total</span>
-                  <span data-testid="in-cart-total">{inr2(cart.totalPaise)}</span>
-                </div>
+            {/* Cart summary: base prices, GST, total */}
+            <div className="glass-tile p-4 text-sm">
+              <Line label={V2_PRODUCT.name} value={inr(V2_PRODUCT.amount * 100)} />
+              {cart.keys.map((k) => (
+                <Line key={k} label={V2_OFFERS[k].short} value={inr(V2_OFFERS[k].amount * 100)} muted />
+              ))}
+              <div className="mt-3 border-t border-black/10 pt-3">
+                <Line label="Subtotal" value={inr2(cart.subtotalPaise)} muted />
+                <Line label="GST (18%)" value={inr2(cart.gstPaise)} muted />
               </div>
+              <div className="mt-2 flex justify-between border-t border-black/10 pt-3 text-base font-black">
+                <span>Total payable</span>
+                <span data-testid="in-total">{inr2(cart.totalPaise)}</span>
+              </div>
+            </div>
 
-              <button className="btn-red inline-flex w-full items-center justify-center gap-2">
-                CONTINUE TO PAYMENT <ArrowRight className="h-4 w-4" />
+            <div>
+              <button
+                type="button"
+                onClick={() => setGstOpen((o) => !o)}
+                aria-expanded={gstOpen}
+                className="inline-flex items-center gap-1 text-sm font-bold text-[#d71914]"
+              >
+                Need a GST invoice? Add your GSTIN
+                <ChevronDown className={`h-4 w-4 transition ${gstOpen ? "rotate-180" : ""}`} />
               </button>
-              <BackLink onClick={() => setStep(1)} />
-            </form>
-          )}
-
-          {step === 3 && (
-            <form onSubmit={pay} noValidate className="space-y-4 p-6">
-              <div className="glass-tile p-4 text-sm">
-                <Line label={V2_PRODUCT.name} value={inr(V2_PRODUCT.amount * 100)} />
-                {cart.keys.map((k) => (
-                  <Line key={k} label={V2_OFFERS[k].short} value={inr(V2_OFFERS[k].amount * 100)} muted />
-                ))}
-                <div className="mt-3 border-t border-black/10 pt-3">
-                  <Line label="Subtotal" value={inr2(cart.subtotalPaise)} muted />
-                  <Line label="GST (18%)" value={inr2(cart.gstPaise)} muted />
+              {gstOpen && (
+                <div className="mt-3 space-y-3">
+                  <Field label="GSTIN" optional error={errors.gstin}>
+                    <Input
+                      name="gstin"
+                      value={gstin}
+                      onChange={(e) => {
+                        setGstin(e.target.value.toUpperCase());
+                        setErrors((x) => ({ ...x, gstin: undefined }));
+                      }}
+                      maxLength={15}
+                      autoCapitalize="characters"
+                      placeholder="e.g. 27ABCDE1234F1Z5"
+                      aria-invalid={!!errors.gstin}
+                      className="glass-input mt-2 h-12 placeholder:text-black/35"
+                    />
+                  </Field>
+                  <Field label="Business Name" optional>
+                    <Input
+                      name="billingName"
+                      value={billingName}
+                      onChange={(e) => setBillingName(e.target.value)}
+                      autoComplete="organization"
+                      className="glass-input mt-2 h-12"
+                    />
+                  </Field>
                 </div>
-                <div className="mt-2 flex justify-between border-t border-black/10 pt-3 text-base font-black">
-                  <span>Total payable</span>
-                  <span data-testid="in-total">{inr2(cart.totalPaise)}</span>
-                </div>
-              </div>
-              {has("bump") && has("membership") && (
-                <p className="flex items-start gap-2 text-xs font-bold text-[#d71914]">
-                  <span aria-hidden="true">🎁</span> Your free 25-minute 1:1 call is included.
-                </p>
               )}
+            </div>
 
-              <p className="text-xs text-black/55">
-                Paying as <strong>{fields.name || "—"}</strong> · {fields.email || "—"} · {fields.phone}{" "}
-                <button type="button" onClick={() => setStep(1)} className="font-bold text-[#d71914] underline">
-                  Edit
-                </button>
+            {payError && (
+              <p role="alert" className="rounded bg-red-50 p-3 text-sm font-bold text-red-700">
+                {payError}
               </p>
-
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setGstOpen((o) => !o)}
-                  aria-expanded={gstOpen}
-                  className="inline-flex items-center gap-1 text-sm font-bold text-[#d71914]"
-                >
-                  Need a GST invoice? Add your GSTIN
-                  <ChevronDown className={`h-4 w-4 transition ${gstOpen ? "rotate-180" : ""}`} />
-                </button>
-                {gstOpen && (
-                  <div className="mt-3 space-y-3">
-                    <Field label="GSTIN" optional error={errors.gstin}>
-                      <Input
-                        name="gstin"
-                        value={gstin}
-                        onChange={(e) => {
-                          setGstin(e.target.value.toUpperCase());
-                          setErrors((x) => ({ ...x, gstin: undefined }));
-                        }}
-                        maxLength={15}
-                        autoCapitalize="characters"
-                        placeholder="e.g. 27ABCDE1234F1Z5"
-                        aria-invalid={!!errors.gstin}
-                        className="glass-input mt-2 h-12 placeholder:text-black/35"
-                      />
-                    </Field>
-                    <Field label="Business Name" optional>
-                      <Input
-                        name="billingName"
-                        value={billingName}
-                        onChange={(e) => setBillingName(e.target.value)}
-                        autoComplete="organization"
-                        className="glass-input mt-2 h-12"
-                      />
-                    </Field>
-                  </div>
-                )}
-              </div>
-
-              {payError && (
-                <p role="alert" className="rounded bg-red-50 p-3 text-sm font-bold text-red-700">
-                  {payError}
-                </p>
-              )}
-              <button disabled={paying} className="btn-red w-full disabled:opacity-60">
-                {paying ? "OPENING SECURE PAYMENT…" : `PAY ${inr2(cart.totalPaise)} SECURELY`}
-              </button>
-              <p className="text-center text-xs text-black/50">
-                <LockKeyhole className="mr-1 inline h-3 w-3" /> Secure checkout powered by Cashfree. By paying you agree to the{" "}
-                <a href={`${PANEL_URL}/terms`} target="_blank" rel="noopener" className="underline">Terms</a>,{" "}
-                <a href={`${PANEL_URL}/privacy`} target="_blank" rel="noopener" className="underline">Privacy</a>,{" "}
-                <a href={`${PANEL_URL}/refund-policy`} target="_blank" rel="noopener" className="underline">Refund</a> and{" "}
-                <a href={`${PANEL_URL}/delivery-policy`} target="_blank" rel="noopener" className="underline">Digital Delivery</a> policies.
-              </p>
-              <BackLink onClick={() => setStep(2)} disabled={paying} />
-            </form>
-          )}
+            )}
+            <button disabled={paying} className="btn-red inline-flex w-full items-center justify-center gap-2 disabled:opacity-60">
+              {paying ? "OPENING SECURE PAYMENT…" : <>PAY {inr2(cart.totalPaise)} SECURELY <ArrowRight className="h-4 w-4" /></>}
+            </button>
+            <p className="text-center text-xs text-black/50">
+              <LockKeyhole className="mr-1 inline h-3 w-3" /> Secure checkout powered by Cashfree. By paying you agree to the{" "}
+              <a href={`${PANEL_URL}/terms`} target="_blank" rel="noopener" className="underline">Terms</a>,{" "}
+              <a href={`${PANEL_URL}/privacy`} target="_blank" rel="noopener" className="underline">Privacy</a>,{" "}
+              <a href={`${PANEL_URL}/refund-policy`} target="_blank" rel="noopener" className="underline">Refund</a> and{" "}
+              <a href={`${PANEL_URL}/delivery-policy`} target="_blank" rel="noopener" className="underline">Digital Delivery</a> policies.
+            </p>
+          </form>
         </DialogContent>
       </Dialog>
     </main>
