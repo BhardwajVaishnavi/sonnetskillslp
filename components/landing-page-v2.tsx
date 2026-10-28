@@ -99,7 +99,7 @@ const AFTER_PAY = [
   [BookOpen, "Instant access in your library", "Read all five volumes online the moment you pay, with PDF downloads too."],
   [MessageCircle, "Delivered on WhatsApp and email", "Your order and your library link arrive on both, so you can't lose them."],
   [PhoneCall, "A free AI Audit call for your business", "We look at your business with you and point at the agent worth building first."],
-  [Rocket, "A NEXPMX 14-day trial", "Start it whenever you're ready, not the day you buy."],
+  [Rocket, "A NEXPMX 15-day trial", "Start it whenever you're ready, not the day you buy."],
 ] as const;
 
 const MEMBERSHIP_POINTS = [
