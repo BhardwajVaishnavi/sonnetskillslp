@@ -1156,8 +1156,8 @@ const IN_KIT = {
 
 type Fields = { name: string; email: string; phone: string };
 type FieldErrors = Partial<Record<keyof Fields | "gstin" | "billingName", string>>;
-/** details → bump → membership → pay */
-type Step = 1 | 2 | 3 | 4;
+/** details → cart (both offers) → pay */
+type Step = 1 | 2 | 3;
 
 const PHONE_PREFIX = "+91 ";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -1270,7 +1270,6 @@ function BackLink({ onClick, disabled }: { onClick: () => void; disabled?: boole
 
 function IndiaPage() {
   const price = inr(V2_PRODUCT.amount * 100);
-  const both = inr((V2_OFFERS.bump.amount + V2_OFFERS.membership.amount) * 100);
 
   const comparison = [
     ["Starting point", "Tool lists", "Business problems first"],
@@ -1302,6 +1301,7 @@ function IndiaPage() {
   const [step, setStep] = useState<Step>(1);
   const [chosen, setChosen] = useState<V2OfferKey[]>([]);
   const [expanded, setExpanded] = useState(false);
+  const [memberOpen, setMemberOpen] = useState(false);
   const [gstOpen, setGstOpen] = useState(false);
   const [gstin, setGstin] = useState("");
   const [billingName, setBillingName] = useState("");
@@ -1313,6 +1313,7 @@ function IndiaPage() {
   const cart = v2Cart(chosen);
   const has = (k: V2OfferKey) => chosen.includes(k);
   const bumpRowRef = useRef<HTMLDivElement | null>(null);
+  const bonusRef = useRef<HTMLDivElement | null>(null);
   const addedToCart = useRef(new Set<string>());
   const checkoutStarted = useRef(false);
 
@@ -1322,14 +1323,15 @@ function IndiaPage() {
   }
 
   /** Meta AddToCart, once per offer per visit: going back and forth is not a second sale. */
-  function addToCart(what: "bump" | "membership" | "both", value: number, keys: V2OfferKey[]) {
+  function addToCart(what: V2OfferKey) {
+    const value = V2_OFFERS[what].amount;
     track("checkout_offer_accepted", { offer: what, value });
     if (addedToCart.current.has(what)) return;
     addedToCart.current.add(what);
     metaTrack("AddToCart", {
       content_type: "product",
-      content_ids: keys.map((k) => V2_OFFERS[k].slug),
-      content_name: what === "both" ? `${V2_OFFERS.bump.name} + ${V2_OFFERS.membership.name}` : V2_OFFERS[what].name,
+      content_ids: [V2_OFFERS[what].slug],
+      content_name: V2_OFFERS[what].name,
       value,
       currency: "INR",
     });
@@ -1452,27 +1454,16 @@ function IndiaPage() {
     setStep(2);
   }
 
-  function toggleBump(on: boolean) {
-    setChosen((c) => (on ? [...new Set([...c, "bump" as const])] : c.filter((k) => k !== "bump")));
-    track("checkout_bump_toggle", { selected: on });
-    if (on) {
-      addToCart("bump", V2_OFFERS.bump.amount, ["bump"]);
-      import("@/lib/popper").then(({ popBonus }) => popBonus(bumpRowRef.current));
-    }
-  }
-
-  function membership(choice: "yes" | "both" | "no") {
-    if (choice === "no") {
-      setChosen((c) => c.filter((k) => k !== "membership"));
-      track("checkout_membership_declined");
-    } else if (choice === "yes") {
-      setChosen((c) => [...new Set([...c, "membership" as const])]);
-      addToCart("membership", V2_OFFERS.membership.amount, ["membership"]);
-    } else {
-      setChosen(["bump", "membership"]);
-      addToCart("both", V2_OFFERS.bump.amount + V2_OFFERS.membership.amount, ["bump", "membership"]);
-    }
-    setStep(4);
+  /** Both offers sit in the cart as tick boxes; having both in unlocks the 1:1. */
+  function setOffers(keys: V2OfferKey[], on: boolean) {
+    const next = on ? [...new Set([...chosen, ...keys])] : chosen.filter((k) => !keys.includes(k));
+    setChosen(next);
+    for (const k of keys) track(k === "bump" ? "checkout_bump_toggle" : "checkout_membership_toggle", { selected: on });
+    if (!on) return;
+    keys.forEach(addToCart);
+    const unlocked = next.includes("bump") && next.includes("membership");
+    if (unlocked) track("checkout_bonus_unlocked");
+    import("@/lib/popper").then(({ popBonus }) => popBonus(unlocked ? bonusRef.current : bumpRowRef.current));
   }
 
   async function pay(e: React.FormEvent<HTMLFormElement>) {
@@ -1543,15 +1534,8 @@ function IndiaPage() {
 
   const heads: Record<Step, [string, React.ReactNode, string]> = {
     1: ["Get the 500 AI Agents", "You’re almost there.", "Enter your details to continue to secure payment."],
-    2: ["Step 2 of 4 · Your order", "Your order", "One optional extra before you pay."],
-    3: [
-      "Step 3 of 4 · One more offer",
-      <>
-        Add the yearly membership for <span className="whitespace-nowrap">+{inr(V2_OFFERS.membership.amount * 100)}</span>
-      </>,
-      "One optional offer before you pay.",
-    ],
-    4: ["Step 4 of 4 · Payment", "Review and pay", "Prices are before GST; 18% GST is added below."],
+    2: ["Step 2 of 3 · Your cart", "Your cart", "Two optional extras. Tick what you want; the total updates as you go."],
+    3: ["Step 3 of 3 · Payment", "Review and pay", "Prices are before GST; 18% GST is added below."],
   };
   const [headEyebrow, headTitle, headText] = heads[step];
 
@@ -2039,13 +2023,13 @@ function IndiaPage() {
         </div>
       )}
 
-      {/* Checkout: details → bump → membership → pay */}
+      {/* Checkout: details → cart (both offers) → pay */}
       <Dialog open={open} onOpenChange={(o) => { if (!paying) setOpen(o); }}>
         <DialogContent className="checkout-dialog max-h-[95vh] gap-0 overflow-y-auto p-0 sm:max-w-lg">
           <div className="glass-head border-b border-white/50 p-6">
             <DialogHeader>
               <p className="eyebrow">{headEyebrow}</p>
-              <DialogTitle className={`${step === 3 ? "text-2xl sm:text-3xl" : "text-3xl"} font-black tracking-tight`}>{headTitle}</DialogTitle>
+              <DialogTitle className="text-3xl font-black tracking-tight">{headTitle}</DialogTitle>
               <DialogDescription>{headText}</DialogDescription>
             </DialogHeader>
             {step <= 2 && (
@@ -2113,102 +2097,127 @@ function IndiaPage() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                track("checkout_step_bump_done", { bump: has("bump") });
+                track("checkout_cart_done", { bump: has("bump"), membership: has("membership"), value: cart.totalPaise / 100 });
                 setStep(3);
               }}
               className="space-y-4 p-6"
             >
-              <div className="space-y-3">
-                <p className="text-xs font-black uppercase tracking-widest text-black/50">Optional add-on</p>
-                <div ref={bumpRowRef} className={`addon ${has("bump") ? "addon-on" : ""}`}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={ADDONS.bundle.checkoutImage} alt={ADDONS.bundle.imageAlt} loading="lazy" className="addon-banner" />
-                  <label className="flex cursor-pointer gap-3">
-                    <Checkbox checked={has("bump")} onCheckedChange={(v) => toggleBump(v === true)} className="mt-1 size-5" />
-                    <span className="grow">
-                      <span className="block text-[11px] font-black uppercase tracking-widest text-[#d71914]">{IN_KIT.bump.label}</span>
-                      <span className="block font-black leading-snug">
-                        Add the ebook bundle + AI Foundations mini-course, +{inr(V2_OFFERS.bump.amount * 100)}
-                      </span>
-                      <span className="mt-1 block text-sm text-black/60">The current bundle, unchanged, plus the mini-course free.</span>
+              <p className="text-xs font-black uppercase tracking-widest text-black/50">Add to your order (optional)</p>
+
+              <div ref={bumpRowRef} className={`addon ${has("bump") ? "addon-on" : ""}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={ADDONS.bundle.checkoutImage} alt={ADDONS.bundle.imageAlt} loading="lazy" className="addon-banner" />
+                <label className="flex cursor-pointer gap-3">
+                  <Checkbox checked={has("bump")} onCheckedChange={(v) => setOffers(["bump"], v === true)} className="mt-1 size-5" />
+                  <span className="grow">
+                    <span className="block text-[11px] font-black uppercase tracking-widest text-[#d71914]">{IN_KIT.bump.label}</span>
+                    <span className="block font-black leading-snug">
+                      Add the ebook bundle + AI Foundations mini-course, +{inr(V2_OFFERS.bump.amount * 100)}
                     </span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setExpanded((x) => !x)}
-                    className="mt-2 ml-8 inline-flex items-center gap-1 text-xs font-bold text-[#d71914]"
-                    aria-expanded={expanded}
-                  >
-                    What’s included <ChevronDown className={`h-3.5 w-3.5 transition ${expanded ? "rotate-180" : ""}`} />
-                  </button>
-                  {expanded && (
-                    <div className="addon-details mt-3 ml-8">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={ADDONS.bundle.detailsImage} alt={ADDONS.bundle.detailsAlt} className="mb-3 w-full rounded-xl" />
-                      <ul className="space-y-1.5 text-sm text-black/70">
-                        {IN_KIT.bump.points.map((pt) => (
-                          <li key={pt} className="flex gap-2">
-                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#d71914]" />
-                            {pt}
-                          </li>
-                        ))}
-                      </ul>
-                      <p className="mt-2 text-[11px] font-bold uppercase tracking-wider text-black/45">{IN_KIT.bump.note}</p>
-                    </div>
-                  )}
-                </div>
-                <p className="text-xs italic text-black/50">
-                  Optional. The {price} volumes are complete on their own. All prices are before GST; 18% is added at payment.
-                </p>
+                    <span className="mt-1 block text-sm text-black/60">The current bundle, unchanged, plus the mini-course free.</span>
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setExpanded((x) => !x)}
+                  className="mt-2 ml-8 inline-flex items-center gap-1 text-xs font-bold text-[#d71914]"
+                  aria-expanded={expanded}
+                >
+                  What’s included <ChevronDown className={`h-3.5 w-3.5 transition ${expanded ? "rotate-180" : ""}`} />
+                </button>
+                {expanded && (
+                  <div className="addon-details mt-3 ml-8">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={ADDONS.bundle.detailsImage} alt={ADDONS.bundle.detailsAlt} className="mb-3 w-full rounded-xl" />
+                    <ul className="space-y-1.5 text-sm text-black/70">
+                      {IN_KIT.bump.points.map((pt) => (
+                        <li key={pt} className="flex gap-2">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#d71914]" />
+                          {pt}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-2 text-[11px] font-bold uppercase tracking-wider text-black/45">{IN_KIT.bump.note}</p>
+                  </div>
+                )}
               </div>
+
+              <div className={`addon ${has("membership") ? "addon-on" : ""}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={ADDONS.newsletter.checkoutImage} alt={ADDONS.newsletter.imageAlt} loading="lazy" className="addon-banner" />
+                <label className="flex cursor-pointer gap-3">
+                  <Checkbox checked={has("membership")} onCheckedChange={(v) => setOffers(["membership"], v === true)} className="mt-1 size-5" />
+                  <span className="grow">
+                    <span className="block text-[11px] font-black uppercase tracking-widest text-[#d71914]">{IN_KIT.membership.label}</span>
+                    <span className="block font-black leading-snug">
+                      Add the {V2_OFFERS.membership.name}, +{inr(V2_OFFERS.membership.amount * 100)}
+                    </span>
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setMemberOpen((x) => !x)}
+                  className="mt-2 ml-8 inline-flex items-center gap-1 text-xs font-bold text-[#d71914]"
+                  aria-expanded={memberOpen}
+                >
+                  What’s included <ChevronDown className={`h-3.5 w-3.5 transition ${memberOpen ? "rotate-180" : ""}`} />
+                </button>
+                {memberOpen && (
+                  <ul className="mt-3 ml-8 space-y-1.5 text-sm text-black/70">
+                    {MEMBERSHIP_POINTS.map((pt) => (
+                      <li key={pt} className="flex gap-2">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#d71914]" />
+                        {pt}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div ref={bonusRef} className={`flex items-start gap-3 rounded-2xl border-2 border-dashed p-3 text-sm ${has("bump") && has("membership") ? "border-[#d71914] bg-red-50" : "border-black/15"}`}>
+                <span aria-hidden="true" className="text-xl leading-none">🎁</span>
+                <span className="grow">
+                  <span className="block text-[11px] font-black uppercase tracking-widest text-[#d71914]">Bonus</span>
+                  {has("bump") && has("membership") ? (
+                    <span className="block font-bold">Unlocked: your free 25-minute 1:1 call is included.</span>
+                  ) : (
+                    <>
+                      <span className="block font-bold">Take all three and get a free 25-minute 1:1 call.</span>
+                      <button
+                        type="button"
+                        onClick={() => setOffers(["bump", "membership"], true)}
+                        className="mt-1 text-xs font-black text-[#d71914] underline underline-offset-4"
+                      >
+                        Add both
+                      </button>
+                    </>
+                  )}
+                </span>
+              </div>
+
+              <div className="glass-tile p-4 text-sm">
+                <Line label={V2_PRODUCT.name} value={inr(V2_PRODUCT.amount * 100)} />
+                {cart.keys.map((k) => (
+                  <Line key={k} label={V2_OFFERS[k].short} value={inr(V2_OFFERS[k].amount * 100)} muted />
+                ))}
+                <div className="mt-3 border-t border-black/10 pt-3">
+                  <Line label="Subtotal" value={inr2(cart.subtotalPaise)} muted />
+                  <Line label="GST (18%)" value={inr2(cart.gstPaise)} muted />
+                </div>
+                <div className="mt-2 flex justify-between border-t border-black/10 pt-3 text-base font-black">
+                  <span>Total</span>
+                  <span data-testid="in-cart-total">{inr2(cart.totalPaise)}</span>
+                </div>
+              </div>
+
               <button className="btn-red inline-flex w-full items-center justify-center gap-2">
-                CONTINUE <ArrowRight className="h-4 w-4" />
+                CONTINUE TO PAYMENT <ArrowRight className="h-4 w-4" />
               </button>
               <BackLink onClick={() => setStep(1)} />
             </form>
           )}
 
           {step === 3 && (
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-4 p-6">
-              <div className={`addon ${has("membership") ? "addon-on" : ""}`}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={ADDONS.newsletter.checkoutImage} alt={ADDONS.newsletter.imageAlt} loading="lazy" className="addon-banner" />
-                <span className="block text-[11px] font-black uppercase tracking-widest text-[#d71914]">{IN_KIT.membership.label}</span>
-                <span className="block text-xl font-black leading-snug">{V2_OFFERS.membership.name}</span>
-                <ul className="mt-3 space-y-1.5 text-sm text-black/70">
-                  {MEMBERSHIP_POINTS.map((p) => (
-                    <li key={p} className="flex gap-2">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#d71914]" />
-                      {p}
-                    </li>
-                  ))}
-                </ul>
-                <p className="mt-3 flex items-start gap-2 text-xs font-bold leading-relaxed text-[#d71914]">
-                  <span aria-hidden="true">🎁</span>
-                  <span>
-                    <span className="uppercase tracking-widest">Bonus</span>
-                    <span className="block font-semibold text-black/70">Take all three and get a 25-minute 1:1 call.</span>
-                  </span>
-                </p>
-              </div>
-              <div className="space-y-2.5">
-                <button type="button" onClick={() => membership("yes")} className="btn-red w-full">
-                  Yes, add the membership
-                </button>
-                {!has("bump") && (
-                  <button type="button" onClick={() => membership("both")} className="btn-outline-red w-full">
-                    Add both and get the 1:1 (+{both})
-                  </button>
-                )}
-                <button type="button" onClick={() => membership("no")} className="w-full py-2 text-sm font-bold text-black/55 underline underline-offset-4">
-                  No thanks
-                </button>
-              </div>
-              <BackLink onClick={() => setStep(2)} />
-            </form>
-          )}
-
-          {step === 4 && (
             <form onSubmit={pay} noValidate className="space-y-4 p-6">
               <div className="glass-tile p-4 text-sm">
                 <Line label={V2_PRODUCT.name} value={inr(V2_PRODUCT.amount * 100)} />
@@ -2292,7 +2301,7 @@ function IndiaPage() {
                 <a href={`${PANEL_URL}/refund-policy`} target="_blank" rel="noopener" className="underline">Refund</a> and{" "}
                 <a href={`${PANEL_URL}/delivery-policy`} target="_blank" rel="noopener" className="underline">Digital Delivery</a> policies.
               </p>
-              <BackLink onClick={() => setStep(3)} disabled={paying} />
+              <BackLink onClick={() => setStep(2)} disabled={paying} />
             </form>
           )}
         </DialogContent>
