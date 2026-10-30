@@ -1214,19 +1214,20 @@ async function panel<T>(path: string, body?: unknown) {
 
 const contentIds = (keys: readonly V2OfferKey[]) => [V2_PRODUCT.slug, ...keys.map((k) => V2_OFFERS[k].slug)];
 
-/** The five volume covers, fanned like a hand of cards; volume 01 in front. */
+/** The five volumes as books, fanned like a hand of cards; volume 01 in front. */
 function CoverFan({ className = "", sizes, preload }: { className?: string; sizes: string; preload?: boolean }) {
   return (
     <div className={`cover-fan ${className}`} role="img" aria-label="The five volumes of 500 AI Agents for Real Businesses">
       {VOLUMES.map((v, i) => (
         <Image
           key={v.no}
-          src={`/v2/cover-vol-${i + 1}.webp`}
+          src={`/v2/lp/book-vol-${i + 1}.webp`}
           alt=""
-          width={600}
-          height={424}
+          width={900}
+          height={1305}
           sizes={sizes}
           preload={preload && i === 0}
+          loading={preload ? "eager" : undefined}
           className="cover-fan-card"
           style={{ "--i": i } as React.CSSProperties}
         />
@@ -1759,20 +1760,29 @@ function IndiaPage() {
         </p>
         <div className="mt-12 grid gap-4 md:grid-cols-2">
           {VOLUMES.map((v, i) => (
-            <article key={v.no} className={`card p-6 ${i === 4 ? "md:col-span-2" : ""}`}>
-              <Image src={volumeIcon(v.name)} alt="" width={64} height={64} className="mb-4 h-14 w-14" />
-              <div className="mb-3 text-xs font-black text-[#d71914]">VOLUME {v.no} · 100 AGENTS</div>
-              <h3 className="text-xl font-black">
-                {v.name} <span className="text-black/45">— {v.title}</span>
-              </h3>
-              <ul className={`mt-3 grid gap-x-6 gap-y-1.5 text-black/65 ${i === 4 ? "sm:grid-cols-2" : ""}`}>
-                {v.chapters.map((c) => (
-                  <li key={c} className="flex gap-2 leading-relaxed">
-                    <Check className="mt-1 h-4 w-4 shrink-0 text-[#d71914]" />
-                    {c}
-                  </li>
-                ))}
-              </ul>
+            <article key={v.no} className={`card flex gap-5 p-6 ${i === 4 ? "md:col-span-2" : ""}`}>
+              <Image
+                src={`/v2/lp/book-vol-${i + 1}.webp`}
+                alt={`Cover of Volume ${v.no}: ${v.name}, ${v.title}`}
+                width={900}
+                height={1305}
+                sizes="112px"
+                className="h-auto w-20 shrink-0 self-start rounded-[2px_4px_4px_2px] shadow-[0_14px_24px_-14px_rgba(0,0,0,.55)] sm:w-28"
+              />
+              <div className="min-w-0">
+                <div className="mb-3 text-xs font-black text-[#d71914]">VOLUME {v.no} · 100 AGENTS</div>
+                <h3 className="text-xl font-black">
+                  {v.name} <span className="text-black/45">— {v.title}</span>
+                </h3>
+                <ul className={`mt-3 grid gap-x-6 gap-y-1.5 text-black/65 ${i === 4 ? "sm:grid-cols-2" : ""}`}>
+                  {v.chapters.map((c) => (
+                    <li key={c} className="flex gap-2 leading-relaxed">
+                      <Check className="mt-1 h-4 w-4 shrink-0 text-[#d71914]" />
+                      {c}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </article>
           ))}
         </div>
