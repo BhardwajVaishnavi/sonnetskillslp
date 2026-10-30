@@ -1055,6 +1055,8 @@ const VOLUMES = [
   },
 ] as const;
 const CHAPTERS = VOLUMES.reduce((n, v) => n + v.chapters.length, 0);
+/** Each volume's icon, cut from the Grow/Serve/Run/Manage/Specialise creative (lp only). */
+const volumeIcon = (name: string) => `/v2/lp/icon-${name.toLowerCase()}.webp`;
 
 /**
  * Proof, copied verbatim from agents.json (`agents[].who[]` entries that carry a
@@ -1616,6 +1618,7 @@ function IndiaPage() {
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
               {VOLUMES.map((v, i) => (
                 <div key={v.no} className={`card p-4 sm:p-5 ${i === 4 ? "col-span-2 lg:col-span-1" : ""}`}>
+                  <Image src={volumeIcon(v.name)} alt="" width={56} height={56} className="mb-3 h-12 w-12 sm:h-14 sm:w-14" />
                   <div className="text-3xl font-black text-[#d71914]">100</div>
                   <div className="mt-2 text-[11px] font-black leading-4 sm:text-xs">
                     VOLUME {v.no} · {v.name.toUpperCase()}
@@ -1666,6 +1669,16 @@ function IndiaPage() {
               </div>
             </div>
           </div>
+          <figure className="mx-auto mt-10 max-w-2xl overflow-hidden rounded-2xl bg-[#faf9f5]">
+            <Image
+              src="/v2/lp/art-workflow.webp"
+              alt="A customer message comes in, the agent decides what it needs, prepares the document and marks the job done"
+              width={1600}
+              height={534}
+              sizes="(max-width: 768px) 100vw, 672px"
+              className="block h-auto w-full"
+            />
+          </figure>
           <p className="mt-12 text-2xl font-bold">
             The opportunity isn’t more AI tools.{" "}
             <span className="text-[#f24a43]">It’s knowing which agent to build first.</span>
@@ -1678,6 +1691,14 @@ function IndiaPage() {
         <Eyebrow>A better starting point</Eyebrow>
         <h2 className="section-title">You do NOT need 500 AI agents.</h2>
         <p className="mt-5 text-2xl font-bold sm:text-3xl">You need the right first one.</p>
+        <Image
+          src="/v2/lp/art-one-in-many.webp"
+          alt="A grid of black squares with a single red one"
+          width={1254}
+          height={1254}
+          sizes="280px"
+          className="mx-auto mt-10 h-auto w-[240px] rounded-2xl sm:w-[280px]"
+        />
         <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-black/65">
           Every agent shows the time and money it saves, what it costs to build, and when your business is ready for it —
           so you can pick the one worth building now.
@@ -1739,6 +1760,7 @@ function IndiaPage() {
         <div className="mt-12 grid gap-4 md:grid-cols-2">
           {VOLUMES.map((v, i) => (
             <article key={v.no} className={`card p-6 ${i === 4 ? "md:col-span-2" : ""}`}>
+              <Image src={volumeIcon(v.name)} alt="" width={64} height={64} className="mb-4 h-14 w-14" />
               <div className="mb-3 text-xs font-black text-[#d71914]">VOLUME {v.no} · 100 AGENTS</div>
               <h3 className="text-xl font-black">
                 {v.name} <span className="text-black/45">— {v.title}</span>
@@ -1761,6 +1783,9 @@ function IndiaPage() {
         <div className="container">
           <Eyebrow>Already happening</Eyebrow>
           <h2 className="section-title mx-auto max-w-4xl text-center">Big companies already run agents like these.</h2>
+          <figure className="mx-auto mt-10 max-w-xl overflow-hidden rounded-2xl bg-[#faf9f5]">
+            <Image src="/v2/lp/art-network.webp" alt="" width={1600} height={800} sizes="(max-width: 768px) 100vw, 672px" className="block h-auto w-full" />
+          </figure>
           <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {PROOF.map((p) => (
               <figure key={p.company} className="rounded-2xl border border-white/15 p-7">
@@ -1813,6 +1838,9 @@ function IndiaPage() {
         <div className="container">
           <Eyebrow>What happens after you pay</Eyebrow>
           <h2 className="section-title text-center">You start reading in a minute.</h2>
+          <figure className="mx-auto mt-10 max-w-2xl overflow-hidden rounded-2xl bg-[#faf9f5]">
+            <Image src="/v2/lp/art-timeline.webp" alt="" width={1600} height={640} sizes="(max-width: 768px) 100vw, 672px" className="block h-auto w-full" />
+          </figure>
           <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {AFTER_PAY.map(([t, d], i) => (
               <div key={t} className="rounded-2xl border border-white/15 p-7">
@@ -1968,6 +1996,16 @@ function IndiaPage() {
           to build and run, and when your business is ready for it — with public examples of companies already doing
           something similar.
         </p>
+        <figure className="mx-auto mt-12 max-w-4xl overflow-hidden rounded-2xl">
+          <Image
+            src="/v2/lp/art-office.webp"
+            alt="An invoice, a phone with a customer chat, a calendar and a ledger, joined by one red thread"
+            width={1600}
+            height={900}
+            sizes="(max-width: 1024px) 100vw, 896px"
+            className="block h-auto w-full"
+          />
+        </figure>
       </section>
 
       {/* FAQ */}
