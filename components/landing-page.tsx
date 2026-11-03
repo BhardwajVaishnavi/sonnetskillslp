@@ -1758,7 +1758,7 @@ function IndiaPage() {
         </p>
         <div className="mt-12 grid gap-4 md:grid-cols-2">
           {VOLUMES.map((v, i) => (
-            <article key={v.no} className={`card flex gap-5 p-6 ${i === 4 ? "md:col-span-2" : ""}`}>
+            <article key={v.no} className={`card flex gap-5 p-6 ${i === 4 ? "md:col-span-2 md:justify-center" : ""}`}>
               <Image
                 src={`/v2/lp/book-vol-${i + 1}.webp`}
                 alt={`Cover of Volume ${v.no}: ${v.name}, ${v.title}`}
