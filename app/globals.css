@@ -94,13 +94,25 @@
 .cover-fan-card:nth-child(4){--r:4.5deg;--y:1.8%}
 .cover-fan-card:nth-child(5){--r:9deg;--y:7%}
 .cover-fan:hover .cover-fan-card{transform:translateY(calc(var(--y) - 3%)) rotate(calc(var(--r)*1.15))}
-.hero-volumes{background:radial-gradient(55% 60% at 50% 70%,#fff 0%,rgba(255,255,255,0) 70%),#f1efec}
-.hero-covers{order:2;width:min(100% - 72px,480px);margin:0 auto 2.25rem}
+.hero-volumes{background:#eceae6}
+/* The hero's wall: tablets in tilted columns, each column a strip of the five
+   volumes twice over, drifting half its length (one full set) and looping.
+   The strip sits so its first set fills the window, and turns about that
+   window's centre, so neither end ever drifts into view.
+   Phones get it as a band under the copy; desktops behind the right half. */
+.cover-wall{--tw:118px;--gap:14px;position:relative;order:2;height:380px;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%)}
+.cover-wall-tilt{position:absolute;top:50%;left:50%;display:flex;align-items:flex-start;gap:var(--gap);transform:translate(-50%,-25%) rotate(-16deg);transform-origin:50% 25%}
+.cover-wall-col{width:var(--tw);flex-shrink:0;animation:wall-drift 70s linear infinite;animation-delay:calc(var(--c)*-9s)}
+.cover-wall-col:nth-child(even){animation-direction:reverse}
+.cover-wall:hover .cover-wall-col{animation-play-state:paused}
+.cover-wall-tab{margin-bottom:var(--gap);padding:5px;border-radius:12px;background:#1c1c1e;box-shadow:0 0 0 1.5px #9a9aa0,0 26px 40px -24px rgba(0,0,0,.6)}
+.cover-wall-tab img{display:block;width:100%;height:auto;border-radius:7px;background:#f3f1ee}
+@keyframes wall-drift{from{transform:translateY(0)}to{transform:translateY(-50%)}}
 @media(min-width:1024px){
-  .hero-volumes{background:radial-gradient(45% 60% at 74% 52%,#fff 0%,rgba(255,255,255,0) 72%),#f1efec}
-  .hero-covers{position:absolute;z-index:1;top:50%;right:max(20px,calc((100% - 1180px)/2));width:min(46%,600px);margin:0;transform:translateY(-50%)}
+  .cover-wall{--tw:clamp(150px,12vw,196px);--gap:clamp(16px,1.5vw,24px);position:absolute;inset:0 0 0 auto;z-index:1;width:min(56%,calc(100% - 600px));height:auto;order:0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 30%);mask-image:linear-gradient(90deg,transparent 0,#000 30%)}
+  .cover-wall-tilt{left:56%}
 }
-@media(min-width:1400px){.hero-volumes{background:radial-gradient(40% 60% at 72% 52%,#fff 0%,rgba(255,255,255,0) 72%),#ece9e5}}
+@media (prefers-reduced-motion:reduce){.cover-wall-col{animation:none;transform:translateY(calc(var(--c)*-6%))}}
 .display-long{font-size:clamp(3rem,4.5vw,4.6rem)}
 @media(max-width:640px){.display-long{font-size:clamp(2.1rem,9.4vw,2.6rem);line-height:.98}}
 .final-covers{justify-self:center;width:100%;max-width:320px}

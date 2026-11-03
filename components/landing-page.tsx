@@ -1215,7 +1215,7 @@ async function panel<T>(path: string, body?: unknown) {
 const contentIds = (keys: readonly V2OfferKey[]) => [V2_PRODUCT.slug, ...keys.map((k) => V2_OFFERS[k].slug)];
 
 /** The five volumes as books, spread in a gentle arc so every cover shows. */
-function CoverFan({ className = "", sizes, preload }: { className?: string; sizes: string; preload?: boolean }) {
+function CoverFan({ className = "", sizes }: { className?: string; sizes: string }) {
   return (
     <div className={`cover-fan ${className}`} role="img" aria-label="The five volumes of 500 AI Agents for Real Businesses">
       {VOLUMES.map((v, i) => (
@@ -1226,12 +1226,46 @@ function CoverFan({ className = "", sizes, preload }: { className?: string; size
           width={900}
           height={1305}
           sizes={sizes}
-          preload={preload && i === 0}
-          loading={preload ? "eager" : undefined}
           className="cover-fan-card"
           style={{ "--i": i } as React.CSSProperties}
         />
       ))}
+    </div>
+  );
+}
+
+const WALL_COLUMNS = 6;
+
+/**
+ * The hero's wall of volumes: the five covers on tablets, running 1 to 5 down
+ * tilted columns that drift slowly, each column starting two volumes on from
+ * the last. Every column holds its five twice so the drift loops without a seam.
+ */
+function CoverWall() {
+  return (
+    <div className="cover-wall" role="img" aria-label="The five volumes of 500 AI Agents for Real Businesses, on tablets">
+      <div className="cover-wall-tilt">
+        {Array.from({ length: WALL_COLUMNS }, (_, c) => (
+          <div key={c} className="cover-wall-col" style={{ "--c": c } as React.CSSProperties}>
+            {Array.from({ length: VOLUMES.length * 2 }, (_, r) => {
+              const v = (r + c * 2) % VOLUMES.length;
+              return (
+                <div key={r} className="cover-wall-tab">
+                  <Image
+                    src={`/v2/lp/book-vol-${v + 1}.webp`}
+                    alt=""
+                    width={900}
+                    height={1305}
+                    sizes="200px"
+                    preload={c === 0 && r === 0}
+                    loading="eager"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1557,9 +1591,9 @@ function IndiaPage() {
         </button>
       </header>
 
-      {/* Hero: copy on the left, the five volumes fanned out on the right */}
+      {/* Hero: copy on the left, a tilted wall of the five volumes on the right */}
       <section id="top" className="hero hero-volumes">
-        <CoverFan className="hero-covers" preload sizes="(max-width: 1023px) 70vw, 420px" />
+        <CoverWall />
         <div className="container hero-grid">
           <div className="hero-copy">
             <span className="pill">
