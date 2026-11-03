@@ -1055,8 +1055,6 @@ const VOLUMES = [
   },
 ] as const;
 const CHAPTERS = VOLUMES.reduce((n, v) => n + v.chapters.length, 0);
-/** Each volume's icon, cut from the Grow/Serve/Run/Manage/Specialise creative (lp only). */
-const volumeIcon = (name: string) => `/v2/lp/icon-${name.toLowerCase()}.webp`;
 
 /**
  * Proof, copied verbatim from agents.json (`agents[].who[]` entries that carry a
@@ -1095,15 +1093,6 @@ const PROOF = [
     source: "Microsoft India story (FY26), accessed Oct 2026",
   },
 ] as const;
-
-const EVERY_AGENT = [
-  "What it does and how it works, step by step",
-  "The time and money it saves, in rupees",
-  "What it costs to build and to run",
-  "When your business is ready for it",
-  "What it needs from you, and what it connects to",
-  "Who is already doing something similar",
-];
 
 const SAMPLES = [
   ["/v2/sample-grw-001-p7.webp", "Page 1: what it does and how it works", "Website Lead Capture Agent, page 1: the problem, what it does, what it needs from you and how it works"],
@@ -1230,6 +1219,39 @@ function CoverFan({ className = "", sizes }: { className?: string; sizes: string
           style={{ "--i": i } as React.CSSProperties}
         />
       ))}
+    </div>
+  );
+}
+
+/**
+ * The video sales letter. It waits behind its title frame and a play button,
+ * then plays with sound and the browser's own controls once tapped.
+ */
+function VslVideo({ onPlay }: { onPlay: () => void }) {
+  const ref = useRef<HTMLVideoElement | null>(null);
+  const [started, setStarted] = useState(false);
+  function start() {
+    setStarted(true);
+    onPlay();
+    void ref.current?.play();
+  }
+  return (
+    <div className="vsl-frame">
+      <video
+        ref={ref}
+        src="/v2/lp/vsl.mp4"
+        poster="/v2/lp/vsl-poster.webp"
+        preload="metadata"
+        playsInline
+        controls={started}
+        className="vsl-video"
+      />
+      {!started && (
+        <button type="button" onClick={start} className="vsl-play" aria-label="Play the video: inside the 500 AI Agents">
+          <span className="vsl-play-icon" aria-hidden />
+          <span className="vsl-play-label">Watch: inside the 500 AI Agents · 1:40</span>
+        </button>
+      )}
     </div>
   );
 }
@@ -1640,42 +1662,9 @@ function IndiaPage() {
         </div>
       </section>
 
-      {/* Product showcase + info strip */}
-      <section className="bg-[#f3f3f0] py-20">
-        <div className="container">
-          <Eyebrow>Inside the 500 AI Agents</Eyebrow>
-          <h2 className="section-title mx-auto max-w-4xl text-center">
-            500 ready-to-build AI agents. Across your entire business.
-          </h2>
-          <div className="mt-12">
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-              {VOLUMES.map((v, i) => (
-                <div key={v.no} className={`card p-4 sm:p-5 ${i === 4 ? "col-span-2 lg:col-span-1" : ""}`}>
-                  <Image src={volumeIcon(v.name)} alt="" width={56} height={56} className="mb-3 h-12 w-12 sm:h-14 sm:w-14" />
-                  <div className="text-3xl font-black text-[#d71914]">100</div>
-                  <div className="mt-2 text-[11px] font-black leading-4 sm:text-xs">
-                    VOLUME {v.no} · {v.name.toUpperCase()}
-                    <span className="block font-bold text-black/55">{v.title.toUpperCase()}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-10 text-sm font-black uppercase tracking-widest">Every agent shows you</p>
-            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {EVERY_AGENT.map((x) => (
-                <p className="flex gap-2 text-xs font-bold leading-4 sm:text-sm" key={x}>
-                  <Check className="h-4 w-4 shrink-0 text-[#d71914]" />
-                  {x}
-                </p>
-              ))}
-            </div>
-          </div>
-          <div className="info-strip mt-12">
-            <div><span>📘</span><strong>5 digital volumes + PDF downloads</strong></div>
-            <div><span>⚡</span><strong>Instant access after payment</strong></div>
-            <div><span>🔒</span><strong>{price} + 18% GST, one-time</strong></div>
-          </div>
-        </div>
+      {/* Inside the 500 AI Agents: the video sales letter, edge to edge */}
+      <section className="vsl" aria-label="Inside the 500 AI Agents: watch the video">
+        <VslVideo onPlay={() => track("vsl_play")} />
       </section>
 
       {/* The reality */}
