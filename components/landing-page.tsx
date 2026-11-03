@@ -1112,7 +1112,7 @@ const SAMPLES = [
 
 const AFTER_PAY = [
   ["Instant access in your library", "Read all five volumes online the moment you pay, with PDF downloads too."],
-  ["Delivered on WhatsApp and email", "Your order and your library link arrive on both, so you can’t lose them."],
+  ["Delivered to your email", "Your order and your library link arrive in your inbox, so you can always find them."],
   ["A free AI Audit call", "We look at your business with you and point at the agent worth building first."],
   ["A NEXPMX 15-day trial", "Start it whenever you’re ready, not the day you buy."],
 ] as const;
@@ -1214,7 +1214,7 @@ async function panel<T>(path: string, body?: unknown) {
 
 const contentIds = (keys: readonly V2OfferKey[]) => [V2_PRODUCT.slug, ...keys.map((k) => V2_OFFERS[k].slug)];
 
-/** The five volumes as books, fanned like a hand of cards; volume 01 in front. */
+/** The five volumes as books, spread in a gentle arc so every cover shows. */
 function CoverFan({ className = "", sizes, preload }: { className?: string; sizes: string; preload?: boolean }) {
   return (
     <div className={`cover-fan ${className}`} role="img" aria-label="The five volumes of 500 AI Agents for Real Businesses">
@@ -1279,7 +1279,7 @@ function IndiaPage() {
     ["Who is this for?", "Founders, business owners, operators, consultants, agencies and professionals who want practical ideas for applying AI inside real business workflows."],
     ["Do I need technical knowledge?", "No. Every agent explains what it does, how it works and what it needs from you in plain language. Building some of them may later need no-code tools, a developer or technical support."],
     ["Does this build all 500 agents for me?", "No. The goal is not to build all 500. It helps you find the one worth building first, and shows what it costs and when your business is ready for it."],
-    ["How will I receive it?", "Instantly, in your library, with PDF downloads. Your order and your library link are also sent on WhatsApp and email."],
+    ["How will I receive it?", "Instantly, in your library, with PDF downloads. Your order and your library link are also sent to your email."],
     [`Is ${price} a subscription?`, `No. ${price} is a one-time payment. 18% GST is added at checkout, so ${inr2(v2Cart([]).totalPaise)} is what actually leaves your account — you see the full breakdown before you pay.`],
     ["What are the add-ons at checkout?", `Two optional extras: the ebook bundle + AI Foundations mini-course for ${inr(V2_OFFERS.bump.amount * 100)}, and the AI Weekly yearly membership for ${inr(V2_OFFERS.membership.amount * 100)}, each + 18% GST and one-time. Take all three and you also get a 25-minute 1:1 call. The ${price} volumes are complete on their own.`],
     ["What else comes with my order?", "A free AI Audit call for your business, and a NEXPMX 15-day trial that you start whenever you’re ready."],
@@ -1545,9 +1545,7 @@ function IndiaPage() {
       <div className="announce">
         <span>{price} + GST</span>
         <span aria-hidden>•</span>
-        <span>Instant access</span>
-        <span aria-hidden>•</span>
-        <span>On WhatsApp &amp; email</span>
+        <span>Instant access on email</span>
       </div>
 
       <header className="container flex h-16 items-center justify-between border-b border-black/10 sm:h-20">
@@ -1904,7 +1902,7 @@ function IndiaPage() {
                 ["500 ready-to-build AI agents", `Across 5 volumes and ${CHAPTERS} chapters, from winning customers to running the books.`],
                 ["Two pages for every agent", "What it does and how it works, what it saves, what it costs, and when you’re ready for it."],
                 ["Playbooks for ten industries", "Volume 05 covers clinics, retail, manufacturing, real estate, hospitality and more."],
-                ["Instant access, with PDF downloads", "Read online the moment you pay; your order also arrives on WhatsApp and email."],
+                ["Instant access, with PDF downloads", "Read online the moment you pay; your order also arrives by email."],
                 ["A free AI Audit call", "We look at your business with you and point at the agent worth building first."],
                 ["A NEXPMX 15-day trial", "Start it whenever you’re ready, not the day you buy."],
               ].map(([t, d]) => (
@@ -2048,7 +2046,7 @@ function IndiaPage() {
               <strong className="text-5xl sm:text-6xl">{price}</strong>
               <Cta source="final_cta_click" onClick={checkout}>GET THE 500 AI AGENTS</Cta>
             </div>
-            <p className="mt-4 text-sm text-white/55">{price} + 18% GST, one-time • Instant access • On WhatsApp &amp; email</p>
+            <p className="mt-4 text-sm text-white/55">{price} + 18% GST, one-time • Instant access on email</p>
           </div>
           <CoverFan className="final-covers" sizes="260px" />
         </div>
@@ -2132,7 +2130,7 @@ function IndiaPage() {
                   className="glass-input mt-2 h-12"
                 />
               </Field>
-              <p className="text-sm text-black/60">We’ll send your order and updates on WhatsApp and email.</p>
+              <p className="text-sm text-black/60">We’ll send your order and updates by email.</p>
             </div>
 
             <div className="space-y-3 pt-2">
