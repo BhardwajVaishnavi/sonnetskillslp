@@ -85,7 +85,7 @@
 @media (prefers-reduced-motion:reduce){.bonus-live,.bonus-live>span[aria-hidden]{animation:none}}
 /* India (funnel v2): the five volumes, as books, spread in a gentle arc —
    each one overlapping the last by under half, so every number and title is
-   in view. Used in the hero, the final CTA and the checkout. */
+   in view. Used in the final CTA and the checkout. */
 .cover-fan{position:relative;aspect-ratio:10/6.4}
 .cover-fan-card{position:absolute;bottom:7%;left:calc(2% + var(--i)*16.5%);z-index:calc(1 + var(--i));width:30%;height:auto;border-radius:2px 5px 5px 2px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.1),0 22px 36px -20px rgba(0,0,0,.5);transform-origin:50% 100%;transform:translateY(var(--y)) rotate(var(--r));transition:transform .45s cubic-bezier(.2,.8,.2,1)}
 .cover-fan-card:nth-child(1){--r:-9deg;--y:7%}
@@ -94,21 +94,40 @@
 .cover-fan-card:nth-child(4){--r:4.5deg;--y:1.8%}
 .cover-fan-card:nth-child(5){--r:9deg;--y:7%}
 .cover-fan:hover .cover-fan-card{transform:translateY(calc(var(--y) - 3%)) rotate(calc(var(--r)*1.15))}
-.hero-volumes{background:#eceae6}
-/* The hero's wall: tablets in still, tilted columns of the five volumes,
-   each column set a little higher than the last. Phones get it as a band
-   under the copy; desktops behind the right half. */
-.cover-wall{--tw:104px;--gap:12px;position:relative;order:2;height:340px;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%)}
-.cover-wall-tilt{position:absolute;top:50%;left:50%;display:flex;align-items:flex-start;gap:var(--gap);transform:translate(-50%,-50%) rotate(-16deg)}
-.cover-wall-col{width:var(--tw);flex-shrink:0;transform:translateY(calc((var(--c) - 2.5)*-6%))}
-.cover-wall-tab{margin-bottom:var(--gap);padding:4px;border-radius:10px;background:#1c1c1e;box-shadow:0 0 0 1.5px #9a9aa0,0 20px 32px -20px rgba(0,0,0,.6)}
-.cover-wall-tab img{display:block;width:100%;height:auto;border-radius:6px;background:#f3f1ee}
+/* India hero: a dark stage under a red glow. The five volumes stand as
+   hardbacks in a shallow arc, outer edges turned towards the reader and the
+   middle one brought forward, each with a spine or page edge on its open side
+   and a reflection on the floor (where the browser can draw one). Phones get
+   the stage under the copy; desktops on the right. */
+.hero-dark{background:radial-gradient(48% 62% at 50% 78%,rgba(215,25,20,.26) 0%,rgba(215,25,20,0) 70%),linear-gradient(180deg,#0b0b0b 0%,#151314 100%);color:#fff}
+.hero-dark::before{display:none}
+.hero-accent{color:#f0332d}
+.hero-dark .pill{border-color:#f0332d66;background:#f0332d1f;color:#ff6a63}
+.hero-dark .social-proof{border-top-color:#ffffff24;color:#ffffffb8}
+.hero-dark .social-proof strong{color:#fff}
+.hero-dark .avatar{border-color:#151314}
+.stage{position:relative;order:2;width:min(100% - 28px,520px);margin:0 auto 2.5rem;padding:18px 0 54px;perspective:1500px}
+.stage::after{content:"";position:absolute;left:4%;right:4%;bottom:26px;height:34px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.75),rgba(0,0,0,0));z-index:-1}
+.stage-row{display:flex;justify-content:center;align-items:flex-end;transform-style:preserve-3d}
+.stage-book{--d:9px;position:relative;width:21.5%;margin-inline:-.6%;transform-style:preserve-3d;transform:translateY(var(--lift,0)) translateZ(var(--z)) rotateY(var(--r));transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.stage-book:nth-child(1){--r:26deg;--z:-40px}
+.stage-book:nth-child(2){--r:13deg;--z:15px}
+.stage-book:nth-child(3){--r:0deg;--z:80px}
+.stage-book:nth-child(4){--r:-13deg;--z:15px}
+.stage-book:nth-child(5){--r:-26deg;--z:-40px}
+.stage-book:hover{--lift:-10px}
+.stage-book img{display:block;width:100%;height:auto;border-radius:1px 3px 3px 1px;background:#f3f1ee;box-shadow:0 30px 40px -24px rgba(0,0,0,.9);-webkit-box-reflect:below 3px linear-gradient(transparent 76%,rgba(255,255,255,.2))}
+.stage-book::before,.stage-book::after{content:"";position:absolute;top:0;bottom:0;width:var(--d)}
+.stage-book::before{left:0;transform-origin:left center;transform:rotateY(90deg);background:linear-gradient(90deg,#2a2627,#0f0d0e)}
+.stage-book::after{right:0;transform-origin:right center;transform:rotateY(-90deg);background:repeating-linear-gradient(90deg,#f4f1ec 0 1px,#d9d4cc 1px 2px)}
+@media(min-width:640px){.stage-book{--d:12px}}
 @media(min-width:1024px){
-  .hero-volumes{min-height:0}
-  .hero-volumes .hero-grid{padding-block:3rem}
-  .cover-wall{--tw:clamp(118px,9.5vw,150px);--gap:clamp(14px,1.2vw,18px);position:absolute;inset:0 0 0 auto;z-index:1;width:min(56%,calc(100% - 600px));height:auto;order:0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 30%);mask-image:linear-gradient(90deg,transparent 0,#000 30%)}
-  .cover-wall-tilt{left:56%}
+  .hero-dark{background:radial-gradient(34% 52% at 73% 58%,rgba(215,25,20,.3) 0%,rgba(215,25,20,0) 72%),radial-gradient(30% 40% at 73% 30%,rgba(255,255,255,.07) 0%,rgba(255,255,255,0) 70%),linear-gradient(180deg,#0b0b0b 0%,#151314 100%)}
+  .hero-dark .hero-grid{padding-block:3.5rem}
+  /* From just past the copy's column to the container's right edge (a touch beyond on wide screens). */
+  .stage{position:absolute;z-index:1;top:47%;left:calc(max(20px,(100% - 1180px)/2) + min(560px,42vw) + 24px);right:max(0px,calc((100% - 1180px)/2 - 40px));width:auto;margin:0;transform:translateY(-50%)}
 }
+@media (prefers-reduced-motion:reduce){.stage-book{transition:none}}
 /* The video sales letter, edge to edge. On desktop it keeps the height the
    section it replaced had, and the band around the picture is the video's own
    background, so nothing of the frame is cropped at any width. A red rule on

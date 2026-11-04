@@ -1256,35 +1256,26 @@ function VslVideo({ onPlay }: { onPlay: () => void }) {
   );
 }
 
-const WALL_COLUMNS = 6;
-
 /**
- * The hero's wall of volumes: the five covers on tablets, running 1 to 5 down
- * still, tilted columns, each column starting two volumes on from the last.
- * Every column holds its five twice so the tilt never shows an empty corner.
+ * The hero's stage: the five volumes as standing hardbacks, 01 to 05, turned
+ * in a shallow arc towards the reader with the middle one brought forward,
+ * each over its own reflection on a dark floor.
  */
-function CoverWall() {
+function CoverStage() {
   return (
-    <div className="cover-wall" role="img" aria-label="The five volumes of 500 AI Agents for Real Businesses, on tablets">
-      <div className="cover-wall-tilt">
-        {Array.from({ length: WALL_COLUMNS }, (_, c) => (
-          <div key={c} className="cover-wall-col" style={{ "--c": c } as React.CSSProperties}>
-            {Array.from({ length: VOLUMES.length * 2 }, (_, r) => {
-              const v = (r + c * 2) % VOLUMES.length;
-              return (
-                <div key={r} className="cover-wall-tab">
-                  <Image
-                    src={`/v2/lp/book-vol-${v + 1}.webp`}
-                    alt=""
-                    width={900}
-                    height={1305}
-                    sizes="200px"
-                    preload={c === 0 && r === 0}
-                    loading="eager"
-                  />
-                </div>
-              );
-            })}
+    <div className="stage" role="img" aria-label="The five volumes of 500 AI Agents for Real Businesses">
+      <div className="stage-row">
+        {VOLUMES.map((v, i) => (
+          <div key={v.no} className="stage-book">
+            <Image
+              src={`/v2/lp/book-vol-${i + 1}.webp`}
+              alt=""
+              width={900}
+              height={1305}
+              sizes="(max-width: 1023px) 22vw, 150px"
+              preload={i === 2}
+              loading="eager"
+            />
           </div>
         ))}
       </div>
@@ -1613,34 +1604,34 @@ function IndiaPage() {
         </button>
       </header>
 
-      {/* Hero: copy on the left, a tilted wall of the five volumes on the right */}
-      <section id="top" className="hero hero-volumes">
-        <CoverWall />
+      {/* Hero: copy on the left, the five volumes standing on a dark stage on the right */}
+      <section id="top" className="hero hero-dark">
+        <CoverStage />
         <div className="container hero-grid">
           <div className="hero-copy">
             <span className="pill">
               <BookOpen className="h-3.5 w-3.5" /> 5 digital volumes · Instant access
             </span>
             <h1 className="display display-long mt-6">
-              <span className="text-[#d71914]">Build your first AI&nbsp;agent.</span>
+              <span className="hero-accent">Build your first AI&nbsp;agent.</span>
               <br />
               500 AI Agents for Real Businesses
             </h1>
-            <p className="mt-5 max-w-xl text-base leading-relaxed text-black/70 sm:text-lg">
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
               500 ready-to-build AI agents for real businesses, each showing what it does, the time and money it saves,
               what it costs to build, and when your business is ready for it.
             </p>
-            <p className="mt-4 text-sm font-bold">
-              500 agents <b className="text-[#d71914]">•</b> 5 volumes <b className="text-[#d71914]">•</b> {CHAPTERS} chapters
+            <p className="mt-4 text-sm font-bold text-white/90">
+              500 agents <b className="hero-accent">•</b> 5 volumes <b className="hero-accent">•</b> {CHAPTERS} chapters
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-4">
               <div className="flex items-baseline gap-2">
                 <span className="text-5xl font-black tracking-[-.06em] sm:text-6xl">{price}</span>
-                <span className="text-xs font-bold uppercase tracking-widest text-black/50">+ GST · One-time</span>
+                <span className="text-xs font-bold uppercase tracking-widest text-white/50">+ GST · One-time</span>
               </div>
               <Cta source="hero_cta_click" onClick={checkout}>GET THE 500 AI AGENTS</Cta>
             </div>
-            <p className="mt-3 text-xs text-black/55 sm:text-sm">
+            <p className="mt-3 text-xs text-white/55 sm:text-sm">
               <LockKeyhole className="mr-1 inline h-3.5 w-3.5" /> Secure payment • Instant access • One-time
             </p>
             <div className="social-proof">
