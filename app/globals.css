@@ -95,28 +95,25 @@
 .cover-fan-card:nth-child(5){--r:9deg;--y:7%}
 .cover-fan:hover .cover-fan-card{transform:translateY(calc(var(--y) - 3%)) rotate(calc(var(--r)*1.15))}
 .hero-volumes{background:#eceae6}
-/* The hero's wall: tablets in tilted columns, each column a strip of the five
-   volumes twice over, drifting half its length (one full set) and looping.
-   The strip sits so its first set fills the window, and turns about that
-   window's centre, so neither end ever drifts into view.
-   Phones get it as a band under the copy; desktops behind the right half. */
-.cover-wall{--tw:118px;--gap:14px;position:relative;order:2;height:380px;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%)}
-.cover-wall-tilt{position:absolute;top:50%;left:50%;display:flex;align-items:flex-start;gap:var(--gap);transform:translate(-50%,-25%) rotate(-16deg);transform-origin:50% 25%}
-.cover-wall-col{width:var(--tw);flex-shrink:0;animation:wall-drift 70s linear infinite;animation-delay:calc(var(--c)*-9s)}
-.cover-wall-col:nth-child(even){animation-direction:reverse}
-.cover-wall:hover .cover-wall-col{animation-play-state:paused}
-.cover-wall-tab{margin-bottom:var(--gap);padding:5px;border-radius:12px;background:#1c1c1e;box-shadow:0 0 0 1.5px #9a9aa0,0 26px 40px -24px rgba(0,0,0,.6)}
-.cover-wall-tab img{display:block;width:100%;height:auto;border-radius:7px;background:#f3f1ee}
-@keyframes wall-drift{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+/* The hero's wall: tablets in still, tilted columns of the five volumes,
+   each column set a little higher than the last. Phones get it as a band
+   under the copy; desktops behind the right half. */
+.cover-wall{--tw:104px;--gap:12px;position:relative;order:2;height:340px;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%)}
+.cover-wall-tilt{position:absolute;top:50%;left:50%;display:flex;align-items:flex-start;gap:var(--gap);transform:translate(-50%,-50%) rotate(-16deg)}
+.cover-wall-col{width:var(--tw);flex-shrink:0;transform:translateY(calc((var(--c) - 2.5)*-6%))}
+.cover-wall-tab{margin-bottom:var(--gap);padding:4px;border-radius:10px;background:#1c1c1e;box-shadow:0 0 0 1.5px #9a9aa0,0 20px 32px -20px rgba(0,0,0,.6)}
+.cover-wall-tab img{display:block;width:100%;height:auto;border-radius:6px;background:#f3f1ee}
 @media(min-width:1024px){
-  .cover-wall{--tw:clamp(150px,12vw,196px);--gap:clamp(16px,1.5vw,24px);position:absolute;inset:0 0 0 auto;z-index:1;width:min(56%,calc(100% - 600px));height:auto;order:0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 30%);mask-image:linear-gradient(90deg,transparent 0,#000 30%)}
+  .hero-volumes{min-height:0}
+  .hero-volumes .hero-grid{padding-block:3rem}
+  .cover-wall{--tw:clamp(118px,9.5vw,150px);--gap:clamp(14px,1.2vw,18px);position:absolute;inset:0 0 0 auto;z-index:1;width:min(56%,calc(100% - 600px));height:auto;order:0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 30%);mask-image:linear-gradient(90deg,transparent 0,#000 30%)}
   .cover-wall-tilt{left:56%}
 }
-@media (prefers-reduced-motion:reduce){.cover-wall-col{animation:none;transform:translateY(calc(var(--c)*-6%))}}
 /* The video sales letter, edge to edge. On desktop it keeps the height the
    section it replaced had, and the band around the picture is the video's own
-   background, so nothing of the frame is cropped at any width. */
-.vsl{background:#eeece8}
+   background, so nothing of the frame is cropped at any width. A red rule on
+   all four sides marks it off from the hero above. */
+.vsl{border:4px solid #d71914;background:#eeece8}
 .vsl-frame{position:relative;width:100%;aspect-ratio:16/9}
 .vsl-video{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;background:#eeece8}
 @media(min-width:1024px){.vsl-frame{aspect-ratio:auto;height:785px}}

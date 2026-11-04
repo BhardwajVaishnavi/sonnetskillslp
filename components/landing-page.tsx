@@ -1260,8 +1260,8 @@ const WALL_COLUMNS = 6;
 
 /**
  * The hero's wall of volumes: the five covers on tablets, running 1 to 5 down
- * tilted columns that drift slowly, each column starting two volumes on from
- * the last. Every column holds its five twice so the drift loops without a seam.
+ * still, tilted columns, each column starting two volumes on from the last.
+ * Every column holds its five twice so the tilt never shows an empty corner.
  */
 function CoverWall() {
   return (
