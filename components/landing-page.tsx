@@ -1257,23 +1257,22 @@ function VslVideo({ onPlay }: { onPlay: () => void }) {
 }
 
 /**
- * The hero's stage: the five volumes as standing hardbacks, 01 to 05, turned
- * in a shallow arc towards the reader with the middle one brought forward,
- * each over its own reflection on a dark floor.
+ * The hero's tablets: the five volumes, one to a tablet, three over two in a
+ * tilted, staggered grid (01 02 03 on top, 04 05 tucked between them below).
  */
-function CoverStage() {
+function CoverTablets() {
   return (
-    <div className="stage" role="img" aria-label="The five volumes of 500 AI Agents for Real Businesses">
-      <div className="stage-row">
+    <div className="stage" role="img" aria-label="The five volumes of 500 AI Agents for Real Businesses, on tablets">
+      <div className="tablets">
         {VOLUMES.map((v, i) => (
-          <div key={v.no} className="stage-book">
+          <div key={v.no} className="tablet">
             <Image
               src={`/v2/lp/book-vol-${i + 1}.webp`}
               alt=""
               width={900}
               height={1305}
-              sizes="(max-width: 1023px) 22vw, 150px"
-              preload={i === 2}
+              sizes="(max-width: 1023px) 32vw, 190px"
+              preload={i === 0}
               loading="eager"
             />
           </div>
@@ -1604,9 +1603,9 @@ function IndiaPage() {
         </button>
       </header>
 
-      {/* Hero: copy on the left, the five volumes standing on a dark stage on the right */}
+      {/* Hero: copy on the left, the five volumes on tilted tablets on a dark stage on the right */}
       <section id="top" className="hero hero-dark">
-        <CoverStage />
+        <CoverTablets />
         <div className="container hero-grid">
           <div className="hero-copy">
             <span className="pill">
